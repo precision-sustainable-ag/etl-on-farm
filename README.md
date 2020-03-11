@@ -23,3 +23,6 @@ The next version will:
 - Extract raw strings from the response object in each row
 - Parse raw strings
 - Push into Shadow
+
+Then the tech dashboard will use the `Publish` function to push from Shadow to Published DB.
+  - Except for `TST`, `DEV`, `DV1`, `TS1`, etc for testing (which will otherwise propagate through all functions)
