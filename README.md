@@ -34,9 +34,9 @@ The first version:
 
 New architecture:
 
- 1. Webhooks push to Raw DB (MySQL or Mongo)
+ 1. Webhooks push to Raw DB (MariaDB ~~or Mongo~~) from each asset (Kobo forms) and device
  2. Parsing script pulls from Raw
-  - We will have a table in Shadow DB (see below) for each table (assets/forms) in Raw that only has a column of parsed-row `uid`s and a column of assets, so we can subset Raw using `GROUP BY asset` + `>max(uid)` (`imported_from_*`)
+  - We will have a table in Shadow DB (see below) for each table (assets and Hologram) in Raw that only has a column of parsed-row `uid`s and a column of assets, so we can subset Raw using `group_by(asset)` + `>max(uid)` (`imported_from_*`)
   - We will have a table to do try-catch style errors (`try_again_*`) to store anything that has unexpected values
   - That way all rows will be pulled only when new **or** when explicitly batched from the retry table
  3. Extract raw strings from the response object in each row

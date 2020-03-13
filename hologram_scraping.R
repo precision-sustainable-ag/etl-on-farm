@@ -275,14 +275,7 @@ splitted_messages %>% walk(archive_gn)
 message("\n")
 gs_auth(token = file.path(holo_path, "my_auth_token.rds"))
 
-gs_keys <- c(
-  AL = "1WkhMEgousiTYF2_0htevXTvtymLplGEbioG6VqZwwUw",
-  DE = "1U1RQWwCBYjMCR-IYpfgcfKEvpPsesHBIJkLyzbznK5A",
-  GA = "1xxH6nxQNV1DxFlT-znvpNnzsdMOPTfeEV7yfslDAx9o",
-  MD = "1fHsdln9BmJuG0LSfKD2zeSKfi1XcZW1jeLIKVTB7NjQ",
-  NC = "1XLEY8wkEfgW0mDu97f3-qVtapv-HY4viz_NXaTyKTZo",
-  VA = "1tf26-wSKqV69B0Yd02cFbz7bJr8ScH4MiRLYz-MksKY"
-)
+# gs_keys from secret.R here
 
 
 get_allocations <- function(key) {
