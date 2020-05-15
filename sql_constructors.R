@@ -1,0 +1,87 @@
+
+# construct equality logic subclause ID matching rows
+ternary_equals_clauser <- function(temp, target, nms) {
+  glue::glue(
+    '(
+    {temp}."{nms}" = {target}."{nms}" OR 
+      ({temp}."{nms}" IS NULL AND {target}."{nms}" IS NULL)
+    )'
+  ) %>% 
+    glue::glue_collapse(sep = " AND ")
+}
+
+# construct query to perform antijoin and then insert result
+insert_from_antijoin <- function(temptable, targettable, nms_both) {
+  
+  cols <- glue::glue('"{nms_both}"') %>% 
+    glue::glue_collapse(sep = ", ")
+  
+  where_clause <- ternary_equals_clauser(
+    temptable, targettable, nms_both
+  )
+  
+  glue::glue(
+    "INSERT INTO {targettable} ({cols})
+    SELECT {cols} FROM {temptable}
+    WHERE NOT EXISTS (
+      SELECT 1 from {targettable}
+      WHERE (
+        {where_clause}
+      )
+    )"
+  )
+  
+}
+
+# Pull specified rows, push to temp, perform antijoin and insert
+etl_push_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
+  prod_con <- etl_connect_prod()
+  shad_con <- etl_connect_shadow("sensors")
+  
+  from_shadow <- tbl(shad_con, shadow_tb) %>% 
+    filter(rawuid %in% rawuids) %>%
+    select(-sid) %>% 
+    collect() 
+  
+  if (!all(unicity %in% names(from_shadow))) {
+    stop("Unicity constraint cols not found in shadow database")
+  } else if (is.null(unicity)) {
+    unicity <- names(from_shadow)
+  }
+  
+  to_push <- from_shadow %>% 
+    distinct_at(vars(matches(unicity)), .keep_all = TRUE) %>% 
+    mutate_at(
+      vars(matches(c("ts_up", "timestamp"))),
+      ~lubridate::as_datetime(.)
+    )
+  
+  temp_tb <- glue::glue("temp_{prod_tb}")
+  
+  dbWriteTable(
+    prod_con, temp_tb, to_push, 
+    temporary = TRUE, overwrite = TRUE
+    )
+  
+  nms_temp <- names(to_push)
+  nms_prod <- dbListFields(prod_con, prod_tb)
+  
+  nms_match <- intersect(nms_temp, nms_prod)
+  
+  query <- insert_from_antijoin(
+    temp_tb, prod_tb, nms_match
+  )
+  
+  rows_affected <- dbExecute(prod_con, query)
+  
+  # temp tables should disappear when connection closes
+  # hoping this is the source of hanging
+  # dbRemoveTable(prod_con, temp_tb)
+  
+  dbDisconnect(prod_con)
+  dbDisconnect(shad_con)
+  
+  rows_affected
+}
+
+
