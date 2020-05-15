@@ -153,8 +153,12 @@ parse_nodes <- function(elt) {
     mutate_at(vars(matches("^nd_")), as.numeric) %>% 
     mutate_at(vars(timestamp, ts_up), lubridate::as_datetime)
   
-  # TODO update this in 5 years!
-  if (lubridate::year(meta$timestamp) > 2025) {
+  # TODO this will break if parsing old data (out of season)
+  # tosses timestamps more than a day in the future or more than 180 days old
+  if (
+    get0("real_time", ifnotfound = Sys.time()) + 3600*24 < meta$timestamp ||
+    get0("real_time", ifnotfound = Sys.time()) - 180*3600*24 > meta$timestamp
+  ) {
     stop("Invalid on-device timestamp")
   }
 
