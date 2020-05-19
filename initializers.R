@@ -32,7 +32,8 @@ etl_connect_prod <- function(con = NULL) {
     host = pg_host,
     port = pg_port,
     sslmode = "require",
-    application_name = "R_Puller_Parser_v0.1"
+    application_name = "R_Puller_Parser_v0.1",
+    connect_timeout = 5
   )
 }
 

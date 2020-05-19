@@ -33,24 +33,95 @@ insert_from_antijoin <- function(temptable, targettable, nms_both) {
   
 }
 
+upsert_do_nothing <- function(temptable, targettable, nms_both, unicity_nm) {
+  
+  cols <- glue::glue('"{nms_both}"') %>% 
+    glue::glue_collapse(sep = ", ")
+  
+  if (missing(unicity_nm) || is.null(unicity_nm)) {
+    conflict_clause <- ";"
+  } else {
+    conflict_clause <- glue::glue(
+      "ON CONFLICT ON CONSTRAINT {unicity_nm}
+      DO NOTHING;"
+    )
+  }
+  
+  glue::glue(
+    "
+    INSERT INTO {targettable} ({cols})
+    SELECT {cols} FROM {temptable}
+    {conflict_clause}
+    "
+  )
+  
+}
+
 # Pull specified rows, push to temp, perform antijoin and insert
-etl_push_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
+# etl_push_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
+#   prod_con <- etl_connect_prod()
+#   shad_con <- etl_connect_shadow("sensors")
+#   
+#   from_shadow <- tbl(shad_con, shadow_tb) %>% 
+#     filter(rawuid %in% rawuids) %>%
+#     select(-sid) %>% 
+#     collect() 
+#   
+#   if (!all(unicity %in% names(from_shadow))) {
+#     stop("Unicity constraint cols not found in shadow database")
+#   } else if (is.null(unicity)) {
+#     unicity <- names(from_shadow)
+#   }
+#   
+#   to_push <- from_shadow %>% 
+#     distinct_at(vars(matches(unicity)), .keep_all = TRUE) %>% 
+#     mutate_at(
+#       vars(matches(c("ts_up", "timestamp"))),
+#       ~lubridate::as_datetime(.)
+#     )
+#   
+#   temp_tb <- glue::glue("temp_{prod_tb}")
+#   
+#   dbWriteTable(
+#     prod_con, temp_tb, to_push, 
+#     temporary = TRUE, overwrite = TRUE
+#     )
+#   
+#   nms_temp <- names(to_push)
+#   nms_prod <- dbListFields(prod_con, prod_tb)
+#   
+#   nms_match <- intersect(nms_temp, nms_prod)
+#   
+#   query <- insert_from_antijoin(
+#     temp_tb, prod_tb, nms_match
+#   )
+#   
+#   rows_affected <- dbExecute(prod_con, query)
+#   
+#   # temp tables should disappear when connection closes
+#   # hoping this is the source of hanging
+#   # dbRemoveTable(prod_con, temp_tb)
+#   
+#   dbDisconnect(prod_con)
+#   dbDisconnect(shad_con)
+#   
+#   rows_affected
+# }
+
+# Pull specified rows from shadow (matching rawuids)
+#   Push them into temp table in prod
+#   Find matching names between temp table and target table
+#   Construct upsert query that inserts matching cols
+#     UNLESS that violates name of unicity constraint (from pgAdmin)
+#     in that case skip the row
+etl_upsert_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
   prod_con <- etl_connect_prod()
   shad_con <- etl_connect_shadow("sensors")
   
   from_shadow <- tbl(shad_con, shadow_tb) %>% 
     filter(rawuid %in% rawuids) %>%
     select(-sid) %>% 
-    collect() 
-  
-  if (!all(unicity %in% names(from_shadow))) {
-    stop("Unicity constraint cols not found in shadow database")
-  } else if (is.null(unicity)) {
-    unicity <- names(from_shadow)
-  }
-  
-  to_push <- from_shadow %>% 
-    distinct_at(vars(matches(unicity)), .keep_all = TRUE) %>% 
+    collect() %>% 
     mutate_at(
       vars(matches(c("ts_up", "timestamp"))),
       ~lubridate::as_datetime(.)
@@ -59,29 +130,23 @@ etl_push_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
   temp_tb <- glue::glue("temp_{prod_tb}")
   
   dbWriteTable(
-    prod_con, temp_tb, to_push, 
+    prod_con, temp_tb, from_shadow, 
     temporary = TRUE, overwrite = TRUE
-    )
+  )
   
-  nms_temp <- names(to_push)
+  nms_temp <- names(from_shadow)
   nms_prod <- dbListFields(prod_con, prod_tb)
   
   nms_match <- intersect(nms_temp, nms_prod)
   
-  query <- insert_from_antijoin(
-    temp_tb, prod_tb, nms_match
+  query <- upsert_do_nothing(
+    temp_tb, prod_tb, nms_match, unicity
   )
   
   rows_affected <- dbExecute(prod_con, query)
-  
-  # temp tables should disappear when connection closes
-  # hoping this is the source of hanging
-  # dbRemoveTable(prod_con, temp_tb)
   
   dbDisconnect(prod_con)
   dbDisconnect(shad_con)
   
   rows_affected
 }
-
-

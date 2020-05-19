@@ -29,35 +29,35 @@ if (length(rawuids_to_push) == 0) {
 
 
 message("Pushing to `water_gateway_data`, rows inserted:")
-etl_push_sensors(
+etl_upsert_sensors(
   "water_gateway_data", 
   "water_gateway_data", 
   rawuids_to_push,
-  unicity = c("gateway_serial_no", "timestamp")
+  unicity = "water_gateway_data_gateway_serial_no_timestamp_key"
   )
 
 message("Pushing to `water_node_data`, rows inserted:")
-etl_push_sensors(
+etl_upsert_sensors(
   "water_node_data", 
   "water_node_data", 
   rawuids_to_push,
-  unicity = c("node_serial_no", "timestamp")
+  unicity = "water_node_data_node_serial_no_timestamp_key"
   )
 
 message("Pushing to `water_sensor_data`, rows inserted:")
-etl_push_sensors(
+etl_upsert_sensors(
   "water_sensor_data", 
   "water_sensor_data", 
   rawuids_to_push,
-  unicity = c("node_serial_no", "timestamp", "tdr_address")
+  unicity = "water_sensor_data_node_serial_no_timestamp_tdr_address_key"
   )
 
 message("Pushing to `ambient_sensor_data`, rows inserted:")
-etl_push_sensors(
+etl_upsert_sensors(
   "ambient_sensor_data", 
   "ambient_sensor_data", 
   rawuids_to_push,
-  unicity = c("node_serial_no", "timestamp")
+  unicity = "ambient_sensor_data_node_serial_no_timestamp_key"
   )
 
 
