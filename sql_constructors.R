@@ -150,3 +150,50 @@ etl_upsert_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
   
   rows_affected
 }
+
+
+# Like the sensor upsert, except pass in a local DF instead of the name of
+#   the shadow DB table. The forms require some reparsing, esp of times
+#   before pushing
+etl_insert_form <- function(local_tb, prod_tb, unicity = NULL) {
+  prod_con <- etl_connect_prod()
+  shad_con <- etl_connect_shadow("forms")
+  
+  temp_tb <- glue::glue("temp_{prod_tb}")
+  
+  dbWriteTable(
+    prod_con, temp_tb, local_tb, 
+    temporary = TRUE, overwrite = TRUE
+  )
+  
+  nms_temp <- names(local_tb)
+  nms_prod <- dbListFields(prod_con, prod_tb)
+  
+  nms_match <- intersect(nms_temp, nms_prod)
+  
+  query <- upsert_do_nothing(
+    temp_tb, prod_tb, nms_match, unicity
+  )
+  
+  rows_affected <- dbExecute(prod_con, query)
+  
+  dbDisconnect(prod_con)
+  dbDisconnect(shad_con)
+  
+  rows_affected
+}
+
+etl_mark_pushed <- function(conn, tbl_nm, idx) {
+  indices <- glue::glue_collapse(idx, sep = ", ")
+  
+  dbExecute(
+    conn,
+    glue::glue(
+      "
+      UPDATE {tbl_nm}
+      SET pushed_to_prod = 1
+      WHERE rawuid IN ({indices})
+      "
+    )
+  )
+}

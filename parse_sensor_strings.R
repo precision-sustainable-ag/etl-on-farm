@@ -14,7 +14,7 @@ safely_as_tibble <- function(...) {
   x
 }
 
-rawdb_to_lst <- function(uid, data) {
+rawdb_hologram_to_lst <- function(uid, data) {
   x <- jsonlite::fromJSON(data)
   x$uid <- uid
   x

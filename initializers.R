@@ -6,13 +6,17 @@ etl_connect_raw <- function(con = NULL) {
     if (is.null(x$error)) return(con)
   }
   
+  raw_ip <- iptools::hostname_to_ip(raw_host)[[1]][1]
+  
   dbConnect(
     RMariaDB::MariaDB(), 
     username = raw_user,
     password = raw_password,
     dbname = raw_dbname,
-    host = raw_host,
-    port = raw_port
+    host = raw_ip,
+    port = raw_port,
+    program_name = "R_Puller_Parser_v0.1",
+    connect_timeout = 10
   )
 }
 
@@ -24,12 +28,15 @@ etl_connect_prod <- function(con = NULL) {
     if (is.null(x$error)) return(con)
   }
   
+  pg_ip <- iptools::hostname_to_ip(pg_host)[[1]][1]
+  
+  
   dbConnect(
     RPostgres::Postgres(), 
     user = pg_user,
     password = pg_password,
     dbname = pg_dbname,
-    host = pg_host,
+    host = pg_ip,
     port = pg_port,
     sslmode = "require",
     application_name = "R_Puller_Parser_v0.1",
@@ -74,6 +81,8 @@ etl_init_shadow_sensors <- function(reset = F) {
     
     file.create("./db/sensors.db")
   }
+  
+  if (!file.exists("./db/sensors.db")) {file.create("./db/sensors.db")}
   
   con_sh <- etl_connect_shadow(dbname = "sensors")
   
@@ -213,25 +222,106 @@ etl_init_shadow_sensors <- function(reset = F) {
 
 
 
-etl_init_shadow_forms <- function() {
-  # each table should be a separate function that can be called
-  #   in here or separately
+etl_init_shadow_forms <- function(reset = F) {
+  # each table should be a separate constructor function
   # each table should have `parsed_at` timestamp so we can record changes
+  
+  if (file.exists("./db/forms.db") && !reset) {
+    stop("Forms database already exists. Need to reset?")
+  }
+  
+  if (file.exists("./db/forms.db") && reset) {
+    confirmation <- askYesNo(
+      "Are you sure you want to clear the shadow forms DB?\n",
+      FALSE
+    )
+    
+    stopifnot(confirmation)
+    
+    file.create("./db/forms.db")
+  }
+  
+  if (!file.exists("./db/forms.db")) {file.create("./db/forms.db")}
+  
   
   con_sh <- etl_connect_shadow(dbname = "forms")
   
+  # Keep track of errored rows
+  dbExecute(
+    con_sh,
+    "CREATE TABLE needs_help (
+      sid INTEGER PRIMARY KEY AUTOINCREMENT,
+      rawuid INTEGER,
+      target_tbl TEXT,
+      err TEXT
+    );"
+  )
   
   
   result <- etl_summarise_shadow(con_sh)
-  
   dbDisconnect(con_sh)
   
   return(result)
 }
 
+etl_create_shadow_forms_wsensor_install <- function(reset = F) {
+  if (!file.exists("./db/forms.db")) {
+    stop("Forms database does not exist; first run `etl_init_shadow_forms()`")
+  }
+  
+  con_sh <- etl_connect_shadow(dbname = "forms")
+  tbls <- dbListTables(con_sh)
+  existing <- "wsensor_install" %in% tbls
+  
+  if (reset && existing) {
+    confirmation <- askYesNo(
+      "Are you sure you want to clear the shadow forms DB?\n",
+      FALSE
+    )
+    
+    stopifnot(confirmation)
+    dbRemoveTable(con_sh, "wsensor_install")
+  }
+  
+  if (!reset && existing) {
+    stop("Table already exists. Need to reset?")
+  }
+  
+  
+  # Keep track of errored rows
+  dbExecute(
+    con_sh,
+    "CREATE TABLE wsensor_install (
+      sid INTEGER PRIMARY KEY AUTOINCREMENT,
+      rawuid INTEGER,
+      parsed_at INTEGER,
+      code TEXT,
+      subplot INTEGER,
+      gateway_serial_no TEXT,
+      bare_node_serial_no TEXT,
+      cover_node_serial_no TEXT,
+      time_begin INTEGER,
+      time_end INTEGER,
+      notes TEXT,
+      submitted_by TEXT,
+      pushed_to_prod INTEGER DEFAULT 0
+    );"
+  )
+  
+  result <- etl_summarise_shadow(con_sh)
+  dbDisconnect(con_sh)
+  
+  return(result)
+}
+
+
+
 # Execute initialization:
 # etl_init_shadow_sensors()
 # etl_init_shadow_forms()
+# etl_create_shadow_forms_wsensor_install()
+
+
 
 
 # library(RSQLite)

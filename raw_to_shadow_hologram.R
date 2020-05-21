@@ -19,6 +19,7 @@ suppressPackageStartupMessages({
   library(RSQLite)
   })
 
+
 message("Connecting to Raw DB")
 con_raw <- etl_connect_raw()
 message("Connecting to Shadow DB\n")
@@ -44,7 +45,7 @@ message("Collected ", nrow(recent_sensor_rows), " rows")
 recent_sensor_rows_list <- 
   recent_sensor_rows %>% 
   select(uid, data) %>% 
-  purrr::pmap(rawdb_to_lst)
+  purrr::pmap(rawdb_hologram_to_lst)
 
 # indices of working nodes vs gateways/awakes/sensorless nodes
 nodes_idx <- recent_sensor_rows_list %>% 
@@ -122,6 +123,7 @@ message("Successfully written to Shadow DB")
 
 # TODO
 # pass over shadow gateway table to fill hologram_metadata
+# currently no data in there, so not a top priority
 
 dbDisconnect(con_raw)
 dbDisconnect(con_sh_s)
