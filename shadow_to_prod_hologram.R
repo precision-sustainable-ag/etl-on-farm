@@ -63,18 +63,7 @@ etl_upsert_sensors(
 
 message("\nMarking rows as pushed:")
 
-indices <- glue::glue_collapse(rawuids_to_push, sep = ", ")
-
-dbExecute(
-  con_sh_s,
-  glue::glue(
-  "
-  UPDATE from_raw
-  SET pushed_to_prod = 1
-  WHERE rawuid IN ({indices})
-  "
-  )
-)
+etl_mark_pushed(con_sh_s, "from_raw", rawuids_to_push)
 
 dbDisconnect(con_sh_s)
 
