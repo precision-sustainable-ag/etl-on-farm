@@ -35,7 +35,7 @@ message("Last row in shadow is from Raw uid: ", last_gotten_sensor)
 
 
 recent_sensor_rows <- tbl(etl_connect_raw(con_raw), "hologram") %>% 
-  filter(uid > last_gotten_sensor, uid < last_gotten_sensor + 100) %>% 
+  filter(uid > last_gotten_sensor, uid < last_gotten_sensor + 600) %>% 
   collect()
 
 message("Collected ", nrow(recent_sensor_rows), " rows")
