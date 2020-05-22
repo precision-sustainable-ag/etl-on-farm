@@ -1,0 +1,129 @@
+suppressPackageStartupMessages({
+  library(dplyr)
+})
+
+repos <- "../shadow-backups"
+
+message("shadow-backups repo status")
+git2r::status(repos)
+git2r::config(
+  repo = git2r::repository(repos),
+  user.name = "shadow_db_backup_bot",
+  user.email = "brianwdavis@gmail.com"
+)
+
+source("secret.R")
+source("initializers.R")
+
+etl_dump <- function(db_name, tbl_name) {
+  out <- glue::glue("../shadow-backups/{db_name}_{tbl_name}.sql")
+  
+  system2(
+    "sqlite3",
+    args = c(
+      glue::glue("./db/{db_name}.db"), 
+      glue::glue("'.dump {tbl_name}'")
+      ),
+    stdout = out
+  )
+
+  info <- file.info(out)
+  
+  age <- as.double(
+    Sys.time() - info$mtime, 
+    units = "secs"
+    )
+  
+  if (age > 10 || is.na(age) || is.null(age)) {
+    warning("File `", basename(out), "` was not written during this call.")
+    }
+  
+  tibble(table = tbl_name, size = info$size, last_stored = info$mtime)
+}
+
+
+
+
+con_sh_f <- etl_connect_shadow("forms")
+
+x <- Sys.time()
+message("Storing forms tables: ")
+DBI::dbListTables(con_sh_f) %>% 
+  purrr::map(~etl_dump("forms", .x)) %>% 
+  bind_rows()
+
+message(
+  "Dump completed in: ", 
+  sprintf("%0.4f", as.double(Sys.time() - x, units = "secs")), 
+  " seconds"
+  )
+
+dbDisconnect(con_sh_f)
+
+
+
+
+con_sh_s <- etl_connect_shadow("sensors")
+
+x <- Sys.time()
+message("Storing sensor tables: ")
+DBI::dbListTables(con_sh_s) %>% 
+  purrr::map(~etl_dump("sensors", .x)) %>% 
+  bind_rows()
+
+message(
+  "Dump completed in: ", 
+  round(as.double(Sys.time() - x, units = "secs"), 4), 
+  " seconds"
+)
+
+dbDisconnect(con_sh_s)
+
+
+
+message("status:")
+git2r::status(repos)
+
+message("adding *.sql files")
+git2r::add(
+  repo = repos,
+  path = "*.sql"
+)
+
+message("status:")
+s <- git2r::status(repos)
+s
+
+l <- s[c("staged", "unstaged")] %>% 
+  purrr::map_int(length)
+
+sess <- sessionInfo()
+sys <- Sys.info()
+
+if (sum(l)) {
+  message("commit:")
+  git2r::commit(
+    repo = repos,
+    message = glue::glue(
+      "Automated backup at {Sys.time()}\n\n",
+      R.version.string,
+      "\n{sess$platform}\n{sess$running}",
+      "\n{sys['nodename']}\n{sys['user']}"
+    ),
+    all = TRUE
+  )
+} else {
+  message("Nothing to commit! ", Sys.time())
+}
+
+
+# message("push to remote:")
+# git2r::push(
+#   object = repos,
+#   name = "origin",
+#   refspec = "refs/heads/master",
+#   credentials = git2r::cred_user_pass(
+#     username = "brianwdavis",
+#     password = gh_token
+#   )
+# )

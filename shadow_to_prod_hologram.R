@@ -24,7 +24,7 @@ rawuids_to_push <- tbl(con_sh_s, "from_raw") %>%
 message("Found ", length(rawuids_to_push), " rows to push\n")
 
 if (length(rawuids_to_push) == 0) {
-  stop("Ending script execution.")
+  stop("Ending script execution.", call. = FALSE)
 }
 
 
