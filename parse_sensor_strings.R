@@ -51,6 +51,19 @@ parse_others <- function(elt) {
     return(NULL)
   }
   
+  if (stringr::str_detect(elt$data, "Successful time update")) {
+    return(NULL)
+  }
+  
+  if (
+    length(chunks) == 2 &&
+    nchar(chunks[1]) == 1 &&
+    as.numeric(chunks[2]) < 0
+    ) {
+    # memory garbage + signal strength
+    return(NULL)
+  }
+  
   if (length(chunks) != 8) {
     stop("Not a data string or incorrect format")
     }
@@ -74,7 +87,7 @@ parse_others <- function(elt) {
   err_flag <- !isTRUE(as.numeric(ret$gateway_serial_no) > 21000000)
   
   if (err_flag) {
-    stop("Possible truncated data")
+    stop("Possible truncated node data")
   }
   
   ret
@@ -169,7 +182,7 @@ parse_nodes <- function(elt) {
     get0("real_time", ifnotfound = Sys.time()) + 3600*24 < meta$timestamp ||
     get0("real_time", ifnotfound = Sys.time()) - 180*3600*24 > meta$timestamp
   ) {
-    stop("Invalid on-device timestamp")
+    stop("Invalid on-device timestamp:", lubridate::as_date(meta$timestamp))
   }
 
   

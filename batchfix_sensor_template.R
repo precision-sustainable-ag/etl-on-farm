@@ -9,7 +9,7 @@ source("parse_sensor_strings.R")
 con_sh_s <- etl_connect_shadow("sensors")
 
 x <- tbl(con_sh_s, "needs_help") %>% 
-  filter(err %like% "%incorrect%", fixed == 0) %>% 
+  filter(fixed == 0) %>% 
   collect() %>% 
   pull(rawuid)
 
@@ -24,10 +24,12 @@ x_lst <- tbl(etl_connect_raw(con_raw), "hologram") %>%
 nodes_idx <- x_lst %>% 
   purrr::map_lgl(~stringr::str_count(.x$data, "~") > 10)
 
+
 fixed_gw <- x_lst[!nodes_idx] %>% 
   purrr::map(purrr::safely(parse_others)) %>% 
   purrr::map("result") %>% 
   bind_rows()
+
 
 fixed_nd <- x_lst[nodes_idx] %>% 
   purrr::map(purrr::safely(parse_nodes)) %>% 
@@ -78,10 +80,11 @@ dbWriteTable(
 
 
 fixed_idx <- glue::glue_collapse(
-  c(fixed_gw$rawuid,
-    metas$rawuid,
-    TDRs$rawuid,
-    ambs$rawuid) %>% 
+  c(fixed_gw[["rawuid"]],
+    metas[["rawuid"]],
+    TDRs[["rawuid"]],
+    ambs[["rawuid"]],
+    -1) %>% 
     unique(),
   sep = ", "
   )
