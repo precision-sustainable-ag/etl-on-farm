@@ -317,21 +317,12 @@ etl_create_shadow_forms_wsensor_install <- function(reset = F) {
 }
 
 
+# SETUP PROJECT: ----
 
 # Execute initialization:
 # etl_init_shadow_sensors()
 # etl_init_shadow_forms()
 # etl_create_shadow_forms_wsensor_install()
 
-
-
-
-# library(RSQLite)
-# con <- dbConnect(SQLite(), "dump_test.db")
-# dbWriteTable(con, "iris", head(iris))
-# system2(
-#   "sqlite3", 
-#   args = c("/Users/baits/Documents/R/dump_test.db", "'.dump iris'"), 
-#   #"'.dump'"     # ".dump"     # "/".dump/""
-#   stdout = TRUE
-# )
+# Spin up cron jobs:
+# 

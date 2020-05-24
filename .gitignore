@@ -122,3 +122,4 @@ secret.R
 README.html
 
 db/*.db
+db/
