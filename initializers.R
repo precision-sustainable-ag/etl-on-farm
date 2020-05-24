@@ -1,9 +1,41 @@
+quickly <- function(.f, timeout = 5, otherwise = NULL, quiet = FALSE) {
+  # lifted from purrr::possibly
+  fname <- deparse(rlang::expr({{.f}}))  
+  # rlang::quo_text may die but looks nicer than deparse
+  
+  .f <- purrr::as_mapper(.f)
+  force(otherwise)
+  function(...) {
+    tryCatch(
+      R.utils::withTimeout(
+        .f(...),
+        timeout = timeout,
+        onTimeout = "error"
+      ), 
+      TimeoutException = function(e) {
+        if (!quiet) message("`", fname, "` took too long: >", timeout, "s")
+      },
+      error = function(e) {
+        if (!quiet) message("Error: ", e$message)
+        otherwise
+      }, 
+      interrupt = function(e) {
+        stop("Terminated by user", call. = FALSE)
+      })
+  }
+}
+
 etl_connect_raw <- function(con = NULL) {
   if (!exists("raw_user")) {source("secret.R")}
   
+  # if (!is.null(con)) {
+  #   x <- purrr::safely(dbListTables)(con)
+  #   if (is.null(x$error)) return(con)
+  # }
+  
   if (!is.null(con)) {
-    x <- purrr::safely(dbListTables)(con)
-    if (is.null(x$error)) return(con)
+    x <- quickly(dbListTables)(con)
+    if (!is.null(x)) return(con)
   }
   
   raw_ip <- iptools::hostname_to_ip(raw_host)[[1]][1]
