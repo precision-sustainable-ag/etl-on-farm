@@ -109,7 +109,8 @@ etl_init_shadow_sensors <- function(reset = F) {
     "CREATE TABLE needs_help (
       sid INTEGER PRIMARY KEY AUTOINCREMENT,
       rawuid INTEGER,
-      err TEXT
+      err TEXT,
+      fixed INTEGER DEFAULT 0
     );"
   )
   
@@ -253,7 +254,8 @@ etl_init_shadow_forms <- function(reset = F) {
       sid INTEGER PRIMARY KEY AUTOINCREMENT,
       rawuid INTEGER,
       target_tbl TEXT,
-      err TEXT
+      err TEXT,
+      fixed INTEGER DEFAULT 0
     );"
   )
   

@@ -47,6 +47,10 @@ parse_others <- function(elt) {
   err_flag <- FALSE
   chunks <- stringr::str_split(elt$data, "~")[[1]]
   
+  if (stringr::str_detect(elt$data, "Gateway awake")) {
+    return(NULL)
+  }
+  
   if (length(chunks) != 8) {
     stop("Not a data string or incorrect format")
     }
