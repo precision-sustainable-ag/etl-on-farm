@@ -29,8 +29,10 @@ con_sh_f <- etl_connect_shadow("forms")
 message("TABLE wsensor_install")
 message(Sys.time())
 
-gotten_wsi <- tbl(con_sh_f, "wsensor_install") %>% 
-  select(rawuid) %>% 
+gotten_wsi <- union_all(
+  tbl(con_sh_f, "wsensor_install") %>% select(rawuid), 
+  tbl(con_sh_f, "needs_help") %>% select(rawuid)
+) %>% 
   collect() %>% 
   pull()
 
