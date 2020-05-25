@@ -4,9 +4,11 @@ real_time_rq <- httr::GET("example.com")
 real_time <- httr::parse_http_date(httr::headers(real_time_rq)$date)
 
 message(
-  "Offset of this server and real time is:\n", 
-  format(Sys.time() - real_time)
+  glue::glue(
+    "Offset of this server and real time is:\n", 
+    format(Sys.time() - real_time)
   )
+)
 
 source("secret.R")
 source("initializers.R")
@@ -31,14 +33,18 @@ last_gotten_sensor <- tbl(con_sh_s, "from_raw") %>%
   collect() %>% 
   pull(uid)
 
-message("Last row in shadow is from Raw uid: ", last_gotten_sensor)
+message(
+  glue::glue("Last row in shadow is from Raw uid: {last_gotten_sensor}")
+  )
 
 
 recent_sensor_rows <- tbl(etl_connect_raw(con_raw), "hologram") %>% 
   filter(uid > last_gotten_sensor, uid < last_gotten_sensor + 600) %>% 
   collect()
 
-message("Collected ", nrow(recent_sensor_rows), " rows")
+message(
+  glue::glue("Collected {nrow(recent_sensor_rows)} rows")
+  )
 
 
 # extract out data and rawdb id into list elements
@@ -51,9 +57,12 @@ recent_sensor_rows_list <-
 nodes_idx <- recent_sensor_rows_list %>% 
   purrr::map_lgl(~stringr::str_count(.x$data, "~") > 10)
 
-message("Found ", sum(nodes_idx), " nodes and ", sum(!nodes_idx), " others\n")
+message(
+  glue::glue("Found {sum(nodes_idx)} nodes and {sum(!nodes_idx)} others\n")
+  )
 
-message(Sys.time(), " parsing gateways")
+message("Parsing gateways")
+stime <- Sys.time()
 
 # gateways and awake messages
 parsed_others <- recent_sensor_rows_list[!nodes_idx] %>% 
@@ -61,15 +70,20 @@ parsed_others <- recent_sensor_rows_list[!nodes_idx] %>%
   bind_rows() %>% 
   mutate_all(~na_if(., -999))
 
-message(Sys.time(), " finished\n")
+message(
+  glue::glue("{Sys.time() - stime} secs; finished gateways\n")
+  )
 
 
-message(Sys.time(), " parsing nodes")
+message("Parsing nodes")
+stime <- Sys.time()
 
 parsed_nodes <- recent_sensor_rows_list[nodes_idx] %>% 
   purrr::map(etl_parse_nds)
 
-message(Sys.time(), " finished\n")
+message(
+  glue::glue("{Sys.time() - stime} secs; finished nodes\n")
+)
 
 metas <- purrr::map(parsed_nodes, "water_node_data") %>% 
   bind_rows() %>% mutate_all(~na_if(., -999))

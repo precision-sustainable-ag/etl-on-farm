@@ -123,3 +123,4 @@ README.html
 
 db/*.db
 db/
+log/

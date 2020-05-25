@@ -350,6 +350,13 @@ etl_create_shadow_forms_wsensor_install <- function(reset = F) {
 
 
 # SETUP PROJECT: ----
+# Install libraries:
+#   - First entry only needed on dev machine, not server
+# renv::init()
+#   - On every commit run:
+# renv::snapshot()
+#   - On clone run:
+# renv::restore()
 
 # Execute initialization:
 # etl_init_shadow_sensors()
