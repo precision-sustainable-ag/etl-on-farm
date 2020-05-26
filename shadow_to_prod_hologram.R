@@ -1,4 +1,8 @@
 message(Sys.time(), "\n\n")
+decolonize <- function(tm) {
+  tm <- gsub("[-:]", "_", tm)
+  gsub(" ", "__", tm)
+}
 
 suppressPackageStartupMessages(
   library(loggit)
@@ -6,7 +10,7 @@ suppressPackageStartupMessages(
 
 set_logfile(
   glue::glue(
-    "{getwd()}/log/shadow_to_prod_hologram_{Sys.time()}.log"
+    "{getwd()}/log/shadow_to_prod_hologram_{decolonize(Sys.time())}.log"
   )
 )
 
@@ -42,6 +46,7 @@ loggit(
 
 if (length(rawuids_to_push) == 0) {
   stop("Ending script execution.", call. = FALSE)
+  set_logfile(logfile = NULL)
 }
 
 rows_aff <- etl_upsert_sensors(

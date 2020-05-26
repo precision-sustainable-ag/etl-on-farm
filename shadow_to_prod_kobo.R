@@ -1,4 +1,8 @@
 message(Sys.time(), "\n\n")
+decolonize <- function(tm) {
+  tm <- gsub("[-:]", "_", tm)
+  gsub(" ", "__", tm)
+}
 
 suppressPackageStartupMessages(
   library(loggit)
@@ -6,7 +10,7 @@ suppressPackageStartupMessages(
 
 set_logfile(
   glue::glue(
-    "{getwd()}/log/shadow_to_prod_kobo_{Sys.time()}.log"
+    "{getwd()}/log/shadow_to_prod_kobo_{decolonize(Sys.time())}.log"
   )
 )
 
