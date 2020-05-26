@@ -166,17 +166,20 @@ if (sum(l)) {
 #   url = "https://github.com/precision-sustainable-ag/shadow-backups.git"
 # )
 
-
-git2r::push(
-  object = repos,
-  name = "shadow-backups-remote",
-  refspec = "refs/heads/master",
-  credentials = git2r::cred_user_pass(
-    username = "brianwdavis",
-    password = gh_token
+if (sum(l)) {
+  git2r::push(
+    object = repos,
+    name = "shadow-backups-remote",
+    refspec = "refs/heads/master",
+    credentials = git2r::cred_user_pass(
+      username = "brianwdavis",
+      password = gh_token
+    )
   )
-)
-message("Pushed to GH remote")
+  message("Pushed to GH remote")
+} else {
+  message("Nothing to push!")
+}
 
 message("Execution end")
 
