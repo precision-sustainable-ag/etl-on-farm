@@ -97,7 +97,7 @@ etl_parse_gws <- function(elt) {
   
   ret <- purrr::safely(parse_others)(elt)
   
-  if (is.null(ret$result)) {
+  if (!is.null(ret$error)) {
     dbWriteTable(
       etl_connect_shadow("sensors"),
       "needs_help",
@@ -254,7 +254,7 @@ etl_parse_nds <- function(elt) {
   
   ret <- purrr::safely(parse_nodes)(elt)
   
-  if (is.null(ret$result)) {
+  if (!is.null(ret$error)) {
     dbWriteTable(
       etl_connect_shadow("sensors"),
       "needs_help",

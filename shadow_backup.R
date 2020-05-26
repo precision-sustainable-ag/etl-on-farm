@@ -29,7 +29,9 @@ loggit(
   "INFO",
   "Repo status",
   output = capture.output(git2r::status(repos)) %>% 
-  paste(collapse = "\n")
+    paste(collapse = "\n") %>% 
+    stringr::str_replace_all("\n|\r", "<br>") %>% 
+    stringr::str_replace_all(":", "-")
   )
 
 git2r::config(
@@ -90,7 +92,7 @@ con_sh_s <- etl_connect_shadow("sensors")
 
 message("Dumping sensors")
 DBI::dbListTables(con_sh_s) %>% 
-  purrr::map(~etl_dump("sensors", .x)) 
+  purrr::walk(~etl_dump("sensors", .x)) 
 
 message("Sensors dump completed")
 
@@ -104,7 +106,8 @@ loggit(
   "Repo status",
   output = capture.output(git2r::status(repos)) %>% 
     paste(collapse = "\n") %>% 
-    stringr::str_replace_all("\n", "<br>")
+    stringr::str_replace_all("\n|\r", "<br>") %>% 
+    stringr::str_replace_all(":", "-")
 )
 
 git2r::add(
@@ -121,7 +124,9 @@ loggit(
   "INFO",
   "Repo status",
   output = capture.output(s) %>% 
-    paste(collapse = "\n")
+    paste(collapse = "\n") %>% 
+    stringr::str_replace_all("\n|\r", "<br>") %>% 
+    stringr::str_replace_all(":", "-")
 )
 
 l <- s[c("staged", "unstaged")] %>% 
@@ -143,7 +148,8 @@ if (sum(l)) {
       all = TRUE
     )
   ) %>% paste(collapse = "\n") %>% 
-    stringr::str_replace_all("\n", "<br>")
+    stringr::str_replace_all("\n|\r", "<br>") %>% 
+    stringr::str_replace_all(":", "-")
   
   loggit(
     "INFO",

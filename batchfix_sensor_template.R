@@ -30,6 +30,11 @@ fixed_gw <- x_lst[!nodes_idx] %>%
   purrr::map("result") %>% 
   bind_rows()
 
+# For further investigating
+error_gw <- x_lst[!nodes_idx] %>% 
+  purrr::map(purrr::safely(parse_others)) %>% 
+  purrr::map("error") %>% 
+  bind_rows()
 
 fixed_nd <- x_lst[nodes_idx] %>% 
   purrr::map(purrr::safely(parse_nodes)) %>% 

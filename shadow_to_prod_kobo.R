@@ -22,8 +22,8 @@ real_time <- httr::parse_http_date(httr::headers(real_time_rq)$date)
 off <- Sys.time() - real_time
 loggit(
   "INFO",
-  glue::glue("Offset of this server and real time is: {format(off)}"),
-  elapsed_s = off
+  glue::glue("Offset of this server and real time is {format(off)}"),
+  offset_s = off
 )
 
 
