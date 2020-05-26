@@ -130,16 +130,18 @@ sess <- sessionInfo()
 sys <- Sys.info()
 
 if (sum(l)) {
-  cmt <- git2r::commit(
-    repo = repos,
-    message = glue::glue(
-      "Automated backup at {Sys.time()}\n\n",
-      R.version.string,
-      "\n{sess$platform}\n{sess$running}",
-      "\n{sys['nodename']}\n{sys['user']}"
-    ),
-    all = TRUE
-  )
+  cmt <- capture.output(
+    git2r::commit(
+      repo = repos,
+      message = glue::glue(
+        "Automated backup at {Sys.time()}\n\n",
+        R.version.string,
+        "\n{sess$platform}\n{sess$running}",
+        "\n{sys['nodename']}\n{sys['user']}"
+      ),
+      all = TRUE
+    )
+  ) %>% paste(collapse = "\n")
   
   loggit(
     "INFO",
