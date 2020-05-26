@@ -103,7 +103,8 @@ loggit(
   "INFO",
   "Repo status",
   output = capture.output(git2r::status(repos)) %>% 
-    paste(collapse = "\n")
+    paste(collapse = "\n") %>% 
+    stringr::str_replace_all("\n", "<br>")
 )
 
 git2r::add(
@@ -141,7 +142,8 @@ if (sum(l)) {
       ),
       all = TRUE
     )
-  ) %>% paste(collapse = "\n")
+  ) %>% paste(collapse = "\n") %>% 
+    stringr::str_replace_all("\n", "<br>")
   
   loggit(
     "INFO",
