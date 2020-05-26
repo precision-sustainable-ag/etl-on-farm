@@ -23,7 +23,7 @@ suppressPackageStartupMessages({
   library(RSQLite)
 })
 
-message("Connecting to Shadow DB\n")
+message("Connecting to Shadow DB")
 con_sh_s <- etl_connect_shadow("sensors")
 
 
@@ -107,4 +107,4 @@ dbDisconnect(con_sh_s)
 
 message("Execution end")
 
-set_logfile(logfile = NULL, confirm = TRUE)
+set_logfile(logfile = NULL)

@@ -36,7 +36,7 @@ suppressPackageStartupMessages({
 
 message("Connecting to Raw DB")
 con_raw <- etl_connect_raw()
-message("Connecting to Shadow DB\n")
+message("Connecting to Shadow DB")
 con_sh_s <- etl_connect_shadow("sensors")
 
 
@@ -122,7 +122,7 @@ rows_aff <- dbWriteTable(
 loggit(
   "INFO",
   "water_gateway_data",
-  rows = rows_aff
+  rows = nrow(parsed_others)
 )
 
 rows_aff <- dbWriteTable(
@@ -135,7 +135,7 @@ rows_aff <- dbWriteTable(
 loggit(
   "INFO",
   "water_node_data",
-  rows = rows_aff
+  rows = nrow(metas)
 )
 
 rows_aff <- dbWriteTable(
@@ -148,7 +148,7 @@ rows_aff <- dbWriteTable(
 loggit(
   "INFO",
   "water_sensor_data",
-  rows = rows_aff
+  rows = nrow(TDRs)
 )
 
 rows_aff <- dbWriteTable(
@@ -161,7 +161,7 @@ rows_aff <- dbWriteTable(
 loggit(
   "INFO",
   "ambient_sensor_data",
-  rows = rows_aff
+  rows = nrow(ambs)
 )
 
 rows_aff <- dbWriteTable(
@@ -175,7 +175,7 @@ rows_aff <- dbWriteTable(
 loggit(
   "INFO",
   "from_raw",
-  rows = rows_aff
+  rows = nrow(recent_sensor_rows)
 )
 
 
@@ -188,4 +188,4 @@ dbDisconnect(con_sh_s)
 
 message("Execution end")
 
-set_logfile(logfile = NULL, confirm = TRUE)
+set_logfile(logfile = NULL)

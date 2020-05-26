@@ -34,9 +34,9 @@ suppressPackageStartupMessages({
   library(RSQLite)
 })
 
-message("Connecting to Shadow DB\n")
+message("Connecting to Shadow DB")
 con_sh_f <- etl_connect_shadow("forms")
-message("Connecting to Production DB\n")
+message("Connecting to Production DB")
 con_prod <- etl_connect_prod()
 
 message("TABLE wsensor_install; pulling")
@@ -70,7 +70,7 @@ loggit(
   rows = rows_aff
 )
 
-message("Marking rows as pushed in `wsensor_install`:")
+message("Marking rows as pushed in `wsensor_install`")
 
 rows_aff <- etl_mark_pushed(con_sh_f, "wsensor_install", wsi_to_push$rawuid)
 loggit(
@@ -83,4 +83,4 @@ dbDisconnect(con_sh_f)
 
 message("Execution end")
 
-set_logfile(logfile = NULL, confirm = TRUE)
+set_logfile(logfile = NULL)

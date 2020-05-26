@@ -37,7 +37,7 @@ suppressPackageStartupMessages({
 
 message("Connecting to Raw DB")
 con_raw <- etl_connect_raw()
-message("Connecting to Shadow DB\n")
+message("Connecting to Shadow DB")
 con_sh_f <- etl_connect_shadow("forms")
 
 
@@ -80,7 +80,7 @@ rows_aff <- dbWriteTable(
 loggit(
   "INFO",
   "wsensor_install pushed",
-  rows = rows_aff
+  rows = nrow(wsi_to_store)
 )
 
 
@@ -89,4 +89,4 @@ dbDisconnect(con_sh_f)
 
 message("Execution end")
 
-set_logfile(logfile = NULL, confirm = TRUE)
+set_logfile(logfile = NULL)
