@@ -1,5 +1,17 @@
 message(Sys.time(), "\n\n")
 
+suppressPackageStartupMessages(
+  library(loggit)
+)
+
+set_logfile(
+  glue::glue(
+    "{getwd()}/log/shadow_to_prod_hologram_{Sys.time()}.log"
+  )
+)
+
+message("Execution start")
+
 source("secret.R")
 source("initializers.R")
 source("sql_constructors.R")
@@ -22,51 +34,75 @@ rawuids_to_push <- tbl(con_sh_s, "from_raw") %>%
   head(1000) %>% 
   unique()
 
-message("Found ", length(rawuids_to_push), " rows to push\n")
+loggit(
+  "INFO",
+  "Found sensor strings to push",
+  rows = length(rawuids_to_push)
+)
 
 if (length(rawuids_to_push) == 0) {
   stop("Ending script execution.", call. = FALSE)
 }
 
-
-message("Pushing to `water_gateway_data`, rows inserted:")
-etl_upsert_sensors(
+rows_aff <- etl_upsert_sensors(
   "water_gateway_data", 
   "water_gateway_data", 
   rawuids_to_push,
   unicity = "water_gateway_data_gateway_serial_no_timestamp_key"
   )
 
-message("Pushing to `water_node_data`, rows inserted:")
-etl_upsert_sensors(
+loggit(
+  "INFO",
+  "water_gateway_data",
+  rows = rows_aff
+)
+
+rows_aff <- etl_upsert_sensors(
   "water_node_data", 
   "water_node_data", 
   rawuids_to_push,
   unicity = "water_node_data_node_serial_no_timestamp_key"
   )
+loggit(
+  "INFO",
+  "water_node_data",
+  rows = rows_aff
+)
 
-message("Pushing to `water_sensor_data`, rows inserted:")
-etl_upsert_sensors(
+rows_aff <- etl_upsert_sensors(
   "water_sensor_data", 
   "water_sensor_data", 
   rawuids_to_push,
   unicity = "water_sensor_data_node_serial_no_timestamp_tdr_address_key"
   )
+loggit(
+  "INFO",
+  "water_sensor_data",
+  rows = rows_aff
+)
 
-message("Pushing to `ambient_sensor_data`, rows inserted:")
-etl_upsert_sensors(
+rows_aff <- etl_upsert_sensors(
   "ambient_sensor_data", 
   "ambient_sensor_data", 
   rawuids_to_push,
   unicity = "ambient_sensor_data_node_serial_no_timestamp_key"
   )
 
+loggit(
+  "INFO",
+  "ambient_sensor_data",
+  rows = rows_aff
+)
 
-message("\nMarking rows as pushed:")
 
-etl_mark_pushed(con_sh_s, "from_raw", rawuids_to_push)
+rows_aff <- etl_mark_pushed(con_sh_s, "from_raw", rawuids_to_push)
+loggit(
+  "INFO",
+  "from_raw",
+  rows = rows_aff
+)
 
 dbDisconnect(con_sh_s)
 
 
-message(Sys.time(), "\n\n")
+message("Execution end")

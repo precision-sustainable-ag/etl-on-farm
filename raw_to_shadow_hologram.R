@@ -1,13 +1,25 @@
 message(Sys.time(), "\n\n")
 
+suppressPackageStartupMessages(
+  library(loggit)
+)
+
+set_logfile(
+  glue::glue(
+    "{getwd()}/log/raw_to_shadow_hologram_{Sys.time()}.log"
+  )
+)
+
+message("Execution start")
+
 real_time_rq <- httr::GET("example.com")
 real_time <- httr::parse_http_date(httr::headers(real_time_rq)$date)
 
-message(
-  glue::glue(
-    "Offset of this server and real time is:\n", 
-    format(Sys.time() - real_time)
-  )
+off <- Sys.time() - real_time
+loggit(
+  "INFO",
+  glue::glue("Offset of this server and real time is: {format(off)}"),
+  elapsed_s = off
 )
 
 source("secret.R")
@@ -42,10 +54,11 @@ recent_sensor_rows <- tbl(etl_connect_raw(con_raw), "hologram") %>%
   filter(uid > last_gotten_sensor, uid < last_gotten_sensor + 600) %>% 
   collect()
 
-message(
-  glue::glue("Collected {nrow(recent_sensor_rows)} rows")
-  )
-
+loggit(
+  "INFO",
+  "Collected sensor strings",
+  rows = nrow(recent_sensor_rows)
+)
 
 # extract out data and rawdb id into list elements
 recent_sensor_rows_list <- 
@@ -57,33 +70,33 @@ recent_sensor_rows_list <-
 nodes_idx <- recent_sensor_rows_list %>% 
   purrr::map_lgl(~stringr::str_count(.x$data, "~") > 10)
 
-message(
-  glue::glue("Found {sum(nodes_idx)} nodes and {sum(!nodes_idx)} others\n")
-  )
 
-message("Parsing gateways")
-stime <- Sys.time()
+loggit(
+  "INFO",
+  "Alleged gateway strings",
+  rows = sum(!nodes_idx, na.rm = T)
+)
+loggit(
+  "INFO",
+  "Alleged node strings",
+  rows = sum(nodes_idx, na.rm = T)
+)
+
 
 # gateways and awake messages
 parsed_others <- recent_sensor_rows_list[!nodes_idx] %>% 
   purrr::map(etl_parse_gws) %>% 
   bind_rows() %>% 
   mutate_all(~na_if(., -999))
-
-message(
-  glue::glue("{Sys.time() - stime} secs; finished gateways\n")
-  )
+message("Parsed gateways")
 
 
-message("Parsing nodes")
-stime <- Sys.time()
 
 parsed_nodes <- recent_sensor_rows_list[nodes_idx] %>% 
   purrr::map(etl_parse_nds)
 
-message(
-  glue::glue("{Sys.time() - stime} secs; finished nodes\n")
-)
+message("Parsed nodes")
+
 
 metas <- purrr::map(parsed_nodes, "water_node_data") %>% 
   bind_rows() %>% mutate_all(~na_if(., -999))
@@ -92,40 +105,66 @@ TDRs <- purrr::map(parsed_nodes, "water_sensor_data") %>%
 ambs <- purrr::map(parsed_nodes, "ambient_sensor_data") %>% 
   bind_rows() %>% mutate_all(~na_if(., -999))
 
+message("Stored local dfs")
 
+message("Writing to shadow DB")
 # write rows to shadow DB
 # gateways, node metadata, TDR, ambient, 
 #   and record of pulled Raw rows
-dbWriteTable(
+
+rows_aff <- dbWriteTable(
   con_sh_s,
   "water_gateway_data",
   parsed_others,
   append = TRUE
 )
 
+loggit(
+  "INFO",
+  "water_gateway_data",
+  rows = rows_aff
+)
 
-dbWriteTable(
+rows_aff <- dbWriteTable(
   con_sh_s,
   "water_node_data",
   metas,
   append = TRUE
 )
 
-dbWriteTable(
+loggit(
+  "INFO",
+  "water_node_data",
+  rows = rows_aff
+)
+
+rows_aff <- dbWriteTable(
   con_sh_s,
   "water_sensor_data",
   TDRs,
   append = TRUE
 )
 
-dbWriteTable(
+loggit(
+  "INFO",
+  "water_sensor_data",
+  rows = rows_aff
+)
+
+rows_aff <- dbWriteTable(
   con_sh_s,
   "ambient_sensor_data",
   ambs,
   append = TRUE
 )
 
-dbWriteTable(
+loggit(
+  "INFO",
+  "ambient_sensor_data",
+  rows = rows_aff
+)
+
+rows_aff <- dbWriteTable(
   con_sh_s,
   "from_raw",
   recent_sensor_rows %>% 
@@ -133,7 +172,12 @@ dbWriteTable(
   append = TRUE
 )
 
-message("Successfully written to Shadow DB")
+loggit(
+  "INFO",
+  "from_raw",
+  rows = rows_aff
+)
+
 
 # TODO
 # pass over shadow gateway table to fill hologram_metadata
@@ -142,4 +186,4 @@ message("Successfully written to Shadow DB")
 dbDisconnect(con_raw)
 dbDisconnect(con_sh_s)
 
-message(Sys.time(), "\n\n")
+message("Execution end")

@@ -1,5 +1,28 @@
 message(Sys.time(), "\n\n")
 
+suppressPackageStartupMessages(
+  library(loggit)
+)
+
+set_logfile(
+  glue::glue(
+    "{getwd()}/log/shadow_to_prod_kobo_{Sys.time()}.log"
+  )
+)
+
+message("Execution start")
+
+real_time_rq <- httr::GET("example.com")
+real_time <- httr::parse_http_date(httr::headers(real_time_rq)$date)
+
+off <- Sys.time() - real_time
+loggit(
+  "INFO",
+  glue::glue("Offset of this server and real time is: {format(off)}"),
+  elapsed_s = off
+)
+
+
 source("secret.R")
 source("initializers.R")
 source("sql_constructors.R")
@@ -16,7 +39,7 @@ con_sh_f <- etl_connect_shadow("forms")
 message("Connecting to Production DB\n")
 con_prod <- etl_connect_prod()
 
-message("TABLE wsensor_install")
+message("TABLE wsensor_install; pulling")
 wsi_to_push <- tbl(con_sh_f, "wsensor_install") %>% 
   filter(pushed_to_prod == 0) %>% 
   head(30) %>% 
@@ -27,22 +50,35 @@ wsi_to_push <- tbl(con_sh_f, "wsensor_install") %>%
     lubridate::as_datetime
     )
   
-message("Found ", nrow(wsi_to_push), " rows to push\n")
+loggit(
+  "INFO",
+  "Found rows to push; `wsensor_install`",
+  rows = nrow(wsi_to_push)
+)
 
-message("Pushing to `wsensor_install`, rows inserted:")
+message("Pushing to `wsensor_install`")
 
-etl_insert_form(
+rows_aff <- etl_insert_form(
   wsi_to_push, 
   "wsensor_install", 
   unicity = "wsensor_install_subplot_code_gateway_serial_no_bare_node_se_key"
   )
 
-message("\nMarking rows as pushed:")
+loggit(
+  "INFO",
+  "wsensor_install",
+  rows = rows_aff
+)
 
-etl_mark_pushed(con_sh_f, "wsensor_install", wsi_to_push$rawuid)
+message("Marking rows as pushed in `wsensor_install`:")
 
+rows_aff <- etl_mark_pushed(con_sh_f, "wsensor_install", wsi_to_push$rawuid)
+loggit(
+  "INFO",
+  "from_raw",
+  rows = rows_aff
+)
 
 dbDisconnect(con_sh_f)
 
-
-message(Sys.time(), "\n\n")
+message("Execution end")

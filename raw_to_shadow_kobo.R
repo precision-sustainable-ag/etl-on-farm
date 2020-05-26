@@ -1,12 +1,27 @@
 message(Sys.time(), "\n\n")
 
+suppressPackageStartupMessages(
+  library(loggit)
+)
+
+set_logfile(
+  glue::glue(
+    "{getwd()}/log/raw_to_shadow_kobo_{Sys.time()}.log"
+  )
+)
+
+message("Execution start")
+
 real_time_rq <- httr::GET("example.com")
 real_time <- httr::parse_http_date(httr::headers(real_time_rq)$date)
 
-message(
-  "Offset of this server and real time is:\n", 
-  format(Sys.time() - real_time)
+off <- Sys.time() - real_time
+loggit(
+  "INFO",
+  glue::glue("Offset of this server and real time is: {format(off)}"),
+  elapsed_s = off
 )
+
 
 source("secret.R")
 source("initializers.R")
@@ -26,8 +41,7 @@ message("Connecting to Shadow DB\n")
 con_sh_f <- etl_connect_shadow("forms")
 
 
-message("TABLE wsensor_install")
-message(Sys.time())
+message("TABLE wsensor_install; pulling")
 
 gotten_wsi <- union_all(
   tbl(con_sh_f, "wsensor_install") %>% select(rawuid), 
@@ -44,21 +58,33 @@ wsi <- tbl(etl_connect_raw(con_raw), "kobo") %>%
   head(30) %>% 
   collect()
 
-message("Found ", nrow(wsi), " forms")
+loggit(
+  "INFO",
+  "Found forms; `psa water sensor install`",
+  rows = nrow(wsi)
+)
 
 wsi_to_store <- wsi %>% 
   purrr::pmap(rawdb_kobo_to_lst) %>% 
   purrr::map(etl_parse_wsensor_install) %>% 
   dplyr::bind_rows()
+message("wsensor_install parsed")
 
-dbWriteTable(
+
+rows_aff <- dbWriteTable(
   con_sh_f,
   "wsensor_install",
   wsi_to_store,
   append = T
 )
+loggit(
+  "INFO",
+  "wsensor_install pushed",
+  rows = rows_aff
+)
 
-message(Sys.time(), " wsensor_install finished\n\n")
 
 
 dbDisconnect(con_sh_f)
+
+message("Execution end")
