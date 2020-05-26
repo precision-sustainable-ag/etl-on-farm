@@ -268,6 +268,13 @@
       "Repository": "CRAN",
       "Hash": "dc0e9c03b3635ff433b045ce6bf0612d"
     },
+    "loggit": {
+      "Package": "loggit",
+      "Version": "2.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "7fd6b18f619504b45de03962ecd981ab"
+    },
     "lubridate": {
       "Package": "lubridate",
       "Version": "1.7.4",
