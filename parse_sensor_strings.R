@@ -18,7 +18,7 @@ rawdb_hologram_to_lst <- function(uid, data) {
   x <- jsonlite::fromJSON(data)
   x$uid <- uid
   
-  if (!stringr::str_detect(x$data, "~|awake")) {
+  if (!stringr::str_detect(x$data, "~|awake|update")) {
     x$data <- base64enc::base64decode(x$data) %>% 
       rawToChar()
   }

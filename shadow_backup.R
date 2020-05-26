@@ -79,7 +79,7 @@ con_sh_f <- etl_connect_shadow("forms")
 
 message("Dumping forms")
 DBI::dbListTables(con_sh_f) %>% 
-  purrr::map(~etl_dump("forms", .x))
+  purrr::walk(~etl_dump("forms", .x))
 
 message("Forms dump completed")
 
