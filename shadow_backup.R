@@ -166,6 +166,9 @@ message("Pushed to GH remote")
 
 message("Execution end")
 
+set_logfile(logfile = NULL, confirm = TRUE)
+
+
 # Generate README for shadow-backup repo ----
 #
 # writeLines(

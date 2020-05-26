@@ -82,3 +82,5 @@ loggit(
 dbDisconnect(con_sh_f)
 
 message("Execution end")
+
+set_logfile(logfile = NULL, confirm = TRUE)
