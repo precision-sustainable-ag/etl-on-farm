@@ -349,8 +349,41 @@ etl_create_shadow_forms_wsensor_install <- function(reset = F) {
 }
 
 
+etl_cron <- function(
+  scriptfile, 
+  clear = F, debug = F, 
+  at = format(Sys.time(), "%H:%M"),
+  where = getwd()
+  ) {
+  
+  where <- tools::file_path_as_absolute(where)
+  
+  if (clear) {
+    cronR::cron_rm(id = scriptfile, dry_run = debug)
+  } else { 
+    cmd <- cronR::cron_rscript(
+      scriptfile,
+      rscript_log = glue::glue(
+        "{getwd()}/rscript_log/{scriptfile}.log"
+      ),
+      rscript_args = where,
+      log_append = F
+    )
+    
+    cronR::cron_add(
+      cmd,
+      frequency = "hourly",
+      at = at,
+      id = scriptfile,
+      tags = c("ETL", "PSAOF"),
+      dry_run = debug
+    )
+  }
+
+}
+
 # SETUP PROJECT: ----
-# Install libraries:
+# -- Install libraries:
 #   - First entry only needed on dev machine, not server
 # renv::init()
 #   - On every commit run:
@@ -358,10 +391,23 @@ etl_create_shadow_forms_wsensor_install <- function(reset = F) {
 #   - On clone run:
 # renv::restore()
 
-# Execute initialization:
+# -- Execute initialization:
 # etl_init_shadow_sensors()
 # etl_init_shadow_forms()
 # etl_create_shadow_forms_wsensor_install()
 
-# Spin up cron jobs:
-# 
+# -- Spin up cron jobs:
+#  - Run once after cloning into server 
+#  - (don't forget to make log dirs)
+# etl_cron("raw_to_shadow_hologram.R", at = "19:40")
+# etl_cron("shadow_to_prod_hologram.R", at = "19:45")
+# etl_cron("raw_to_shadow_kobo.R", at = "19:50")
+# etl_cron("shadow_to_prod_kobo.R", at = "19:55")
+# etl_cron("shadow_backup.R", at = "20:00")
+#
+#  - To remove jobs later:
+# cronR::cron_ls()
+# cronR::cron_njobs()
+# etl_cron("shadow_backup.R", clear = T)
+#  - To clear all:
+# cronR::cron_clear()

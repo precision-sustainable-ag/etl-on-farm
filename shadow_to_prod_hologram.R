@@ -1,4 +1,8 @@
 message(Sys.time(), "\n\n")
+
+x <- na.omit(stringr::str_match(commandArgs(), "--file=(.+)")[,2])
+if (length(x)) setwd(dirname(x))
+
 decolonize <- function(tm) {
   tm <- gsub("[-:]", "_", tm)
   gsub(" ", "__", tm)

@@ -124,3 +124,4 @@ README.html
 db/*.db
 db/
 log/
+rscript_log/
