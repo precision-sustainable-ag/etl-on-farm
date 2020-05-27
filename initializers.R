@@ -391,6 +391,12 @@ etl_cron <- function(
 #   - On clone run:
 # renv::restore()
 
+# -- Create untracked dirs
+# if (!dir.exists("./log")) dir.create("./log")
+# if (!dir.exists("./db")) dir.create("./db")
+# if (!dir.exists("./rscript_log")) dir.create("./rscript_log")
+
+
 # -- Execute initialization:
 # etl_init_shadow_sensors()
 # etl_init_shadow_forms()
@@ -399,11 +405,11 @@ etl_cron <- function(
 # -- Spin up cron jobs:
 #  - Run once after cloning into server 
 #  - (don't forget to make log dirs)
-# etl_cron("raw_to_shadow_hologram.R", at = "19:40")
-# etl_cron("shadow_to_prod_hologram.R", at = "19:45")
-# etl_cron("raw_to_shadow_kobo.R", at = "19:50")
-# etl_cron("shadow_to_prod_kobo.R", at = "19:55")
-# etl_cron("shadow_backup.R", at = "20:00")
+# etl_cron("raw_to_shadow_hologram.R", at = "19:09")
+# etl_cron("shadow_to_prod_hologram.R", at = "19:14")
+# etl_cron("raw_to_shadow_kobo.R", at = "19:19")
+# etl_cron("shadow_to_prod_kobo.R", at = "19:24")
+# etl_cron("shadow_backup.R", at = "20:29")
 #
 #  - To remove jobs later:
 # cronR::cron_ls()
