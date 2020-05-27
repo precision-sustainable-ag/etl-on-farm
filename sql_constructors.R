@@ -184,6 +184,8 @@ etl_insert_form <- function(local_tb, prod_tb, unicity = NULL) {
 }
 
 etl_mark_pushed <- function(conn, tbl_nm, idx) {
+  if (!length(idx)) {return(0)}
+  
   indices <- glue::glue_collapse(idx, sep = ", ")
   
   dbExecute(

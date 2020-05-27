@@ -17,6 +17,7 @@ set_logfile(
     "{getwd()}/log/raw_to_shadow_kobo_{decolonize(Sys.time())}.log"
   )
 )
+set_timestamp_format("%Y-%m-%dT%H:%M:%OS4%z")
 
 message("Execution start")
 

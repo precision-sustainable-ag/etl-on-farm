@@ -17,6 +17,7 @@ set_logfile(
     "{getwd()}/log/shadow_backup_{decolonize(Sys.time())}.log"
   )
 )
+set_timestamp_format("%Y-%m-%dT%H:%M:%OS4%z")
 
 message("Execution start")
 
@@ -25,6 +26,7 @@ source("initializers.R")
 
 suppressPackageStartupMessages({
   library(dplyr)
+  library(DBI)
 })
 
 repos <- "../shadow-backups"
