@@ -1,3 +1,10 @@
+sanitize_ndjson <- function(s) {
+  s %>% 
+    paste(collapse = "\n") %>% 
+    stringr::str_replace_all("\n|\r", "<br>") %>% 
+    stringr::str_replace_all(":", "-")
+}
+
 
 # construct equality logic subclause ID matching rows
 ternary_equals_clauser <- function(temp, target, nms) {
@@ -143,12 +150,17 @@ etl_upsert_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
     temp_tb, prod_tb, nms_match, unicity
   )
   
-  rows_affected <- dbExecute(prod_con, query)
+  rows_affected <- purrr::safely(dbExecute)(prod_con, query)
   
   dbDisconnect(prod_con)
   dbDisconnect(shad_con)
   
-  rows_affected
+  if (is.null(rows_affected$error)) {
+    return(rows_affected$result)
+  } else {
+    stop(sanitize_ndjson(rows_affected$error))
+  }
+  
 }
 
 
@@ -175,12 +187,16 @@ etl_insert_form <- function(local_tb, prod_tb, unicity = NULL) {
     temp_tb, prod_tb, nms_match, unicity
   )
   
-  rows_affected <- dbExecute(prod_con, query)
+  rows_affected <- purrr::safely(dbExecute)(prod_con, query)
   
   dbDisconnect(prod_con)
   dbDisconnect(shad_con)
   
-  rows_affected
+  if (is.null(rows_affected$error)) {
+    return(rows_affected$result)
+  } else {
+    stop(sanitize_ndjson(rows_affected$error))
+  }
 }
 
 etl_mark_pushed <- function(conn, tbl_nm, idx) {
@@ -188,7 +204,7 @@ etl_mark_pushed <- function(conn, tbl_nm, idx) {
   
   indices <- glue::glue_collapse(idx, sep = ", ")
   
-  dbExecute(
+  rows_affected <- purrr::safely(dbExecute)(
     conn,
     glue::glue(
       "
@@ -198,4 +214,10 @@ etl_mark_pushed <- function(conn, tbl_nm, idx) {
       "
     )
   )
+  
+  if (is.null(rows_affected$error)) {
+    return(rows_affected$result)
+  } else {
+    stop(sanitize_ndjson(rows_affected$error))
+  }
 }
