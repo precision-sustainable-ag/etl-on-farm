@@ -282,19 +282,3 @@ etl_parse_nds <- function(elt) {
   ret$result
 }
 
-
-
-# try parsing, on error post to "needs_help"
-# store each in shadow db
-# append to tables in production - how to keep track of which sent?
-
-# push local to temp table
-# to_write <- antijoin(temp, target) 
-# dbWrite(target, to_write, append = T)
-
-# don't need for raw to shadow, do for shadow to prod
-# I don't actually need this! the relation of which raw id goes
-#   to which prod id doesn't matter until the end when we're reconciling,
-#   so this can just be done once at the end of the season with all of
-#   shadow and all of prod
-# returned rows <- inner_join(to_write, target)
