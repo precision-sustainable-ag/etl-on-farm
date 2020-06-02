@@ -410,8 +410,8 @@ etl_cron <- function(
 # etl_cron("shadow_to_prod_hologram.R", at = "19:14")
 # etl_cron("raw_to_shadow_kobo.R", at = "19:19")
 # etl_cron("shadow_to_prod_kobo.R", at = "19:24")
-# etl_cron("shadow_backup.R", at = "20:29") # change to daily?
-#
+# etl_cron("shadow_backup.R", at = "20:29") 
+
 #  - To remove jobs later:
 # cronR::cron_ls()
 # cronR::cron_njobs()

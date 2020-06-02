@@ -3,9 +3,9 @@ message(Sys.time(), "\n\n")
 x <- na.omit(stringr::str_match(commandArgs(), "--file=(.+)")[,2])
 if (length(x)) setwd(dirname(x))
 
-decolonize <- function(tm) {
-  tm <- gsub("[-:]", "_", tm)
-  gsub(" ", "__", tm)
+decolonize <- function(s) {
+  stringr::str_replace_all(s, "[[:punct:]]", "_") %>% 
+    stringr::str_replace_all("[[:space:]]", "__")
 }
 
 suppressPackageStartupMessages(
@@ -39,7 +39,7 @@ suppressPackageStartupMessages({
   library(DBI)
 })
 
-repos <- "../shadow-backups"
+repos <- "../shadow-splits"
 
 loggit(
   "INFO",
@@ -56,9 +56,14 @@ git2r::config(
   user.email = "brianwdavis@gmail.com"
 )
 
+dir_create_conditional <- function(path) {
+  if (!dir.exists(path)) {
+    dir.create(path)
+  }
+}
 
 etl_dump <- function(db_name, tbl_name) {
-  out <- glue::glue("../shadow-backups/{db_name}_{tbl_name}.sql")
+  out <- glue::glue("../shadow-splits/{db_name}_{tbl_name}.sql")
   
   system2(
     "sqlite3",
@@ -71,14 +76,14 @@ etl_dump <- function(db_name, tbl_name) {
 
   info <- file.info(out)
   
-  age <- as.double(
-    Sys.time() - info$mtime, 
-    units = "secs"
-    )
-  
-  if (age > 10 || is.na(age) || is.null(age)) {
-    warning("File `", basename(out), "` was not written during this call.")
-    }
+  # age <- as.double(
+  #   Sys.time() - info$mtime, 
+  #   units = "secs"
+  #   )
+  # 
+  # if (age > 10 || is.na(age) || is.null(age)) {
+  #   warning("File `", basename(out), "` was not written during this call.")
+  #   }
   
   #tibble(table = tbl_name, size = info$size, last_stored = info$mtime)
   loggit(
@@ -88,16 +93,38 @@ etl_dump <- function(db_name, tbl_name) {
 }
 
 
-
+etl_split_dumps <- function(db_name, tbl_name) {
+  dir_create_conditional(
+    glue::glue("../shadow-splits/{db_name}/{tbl_name}_sql")
+  )
+  
+  dump_src <- glue::glue("../shadow-splits/{db_name}_{tbl_name}.sql")
+  dump_trg <- glue::glue("../shadow-splits/{db_name}/{tbl_name}_sql/sql_")
+  
+  system2("split", args = c("-l 1000", "-a 3", dump_src, dump_trg))
+  
+  num_splits <- length(list.files(dirname(dump_trg)))
+  
+  loggit(
+    "INFO", "Split",
+    db = db_name, file = tbl_name, number_of_files = num_splits
+  )
+  
+}
 
 con_sh_f <- etl_connect_shadow("forms")
 
 
-message("Dumping forms")
 DBI::dbListTables(con_sh_f) %>% 
   purrr::walk(~etl_dump("forms", .x))
 
 message("Forms dump completed")
+
+DBI::dbListTables(con_sh_f) %>% 
+  purrr::walk(~etl_split_dumps("forms", .x))
+
+message("Forms dumps split")
+
 
 dbDisconnect(con_sh_f)
 
@@ -106,11 +133,15 @@ dbDisconnect(con_sh_f)
 
 con_sh_s <- etl_connect_shadow("sensors")
 
-message("Dumping sensors")
 DBI::dbListTables(con_sh_s) %>% 
   purrr::walk(~etl_dump("sensors", .x)) 
 
 message("Sensors dump completed")
+
+DBI::dbListTables(con_sh_s) %>% 
+  purrr::walk(~etl_split_dumps("sensors", .x)) 
+
+message("Sensors dumps split")
 
 
 dbDisconnect(con_sh_s)
@@ -128,9 +159,9 @@ loggit(
 
 git2r::add(
   repo = repos,
-  path = "*.sql"
+  path = "*"
 )
-message("`git add`ed all *.sql files")
+message("`git add`ed all files")
 
 
 s <- git2r::status(repos)
@@ -178,14 +209,14 @@ if (sum(l)) {
 
 # git2r::remote_add(
 #   repo = repos,
-#   name = "shadow-backups-remote",
-#   url = "https://github.com/precision-sustainable-ag/shadow-backups.git"
+#   name = "shadow-splits-remote",
+#   url = "https://github.com/precision-sustainable-ag/shadow-splits.git"
 # )
 
 if (sum(l)) {
   git2r::push(
     object = repos,
-    name = "shadow-backups-remote",
+    name = "shadow-splits-remote",
     refspec = "refs/heads/master",
     credentials = git2r::cred_user_pass(
       username = "brianwdavis",
