@@ -9,13 +9,6 @@
     ]
   },
   "Packages": {
-    "AsioHeaders": {
-      "Package": "AsioHeaders",
-      "Version": "1.12.2-1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "a631d045d5d2cf9bc01421b9f6a25abc"
-    },
     "BH": {
       "Package": "BH",
       "Version": "1.72.0-3",
@@ -156,6 +149,13 @@
       "Repository": "CRAN",
       "Hash": "0d57bc8e27b7ba9e45dba825ebc0de6b"
     },
+    "cronR": {
+      "Package": "cronR",
+      "Version": "0.4.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "e4b8dd22a14790a5736694fd0181a401"
+    },
     "curl": {
       "Package": "curl",
       "Version": "4.3",
@@ -239,13 +239,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "7146fea4685b4252ebf478978c75f597"
-    },
-    "iptools": {
-      "Package": "iptools",
-      "Version": "0.6.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "35ab39b3b2fff867c8d4321e782d491f"
     },
     "jsonlite": {
       "Package": "jsonlite",
@@ -421,13 +414,6 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "7d4b0f1ab542d8cb7a40c593a4de2f36"
-    },
-    "triebeard": {
-      "Package": "triebeard",
-      "Version": "0.3.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "847a9d113b78baca4a9a8639609ea228"
     },
     "utf8": {
       "Package": "utf8",
