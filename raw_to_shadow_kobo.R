@@ -21,7 +21,7 @@ set_timestamp_format("%Y-%m-%dT%H:%M:%OS4%z")
 
 message("Execution start")
 
-real_time_rq <- httr::GET("example.com")
+real_time_rq <- httr::RETRY("GET", "example.com")
 real_time <- httr::parse_http_date(httr::headers(real_time_rq)$date)
 
 off <- Sys.time() - real_time

@@ -38,7 +38,7 @@ etl_connect_raw <- function(con = NULL) {
     if (!is.null(x)) return(con)
   }
   
-  raw_ip <- iptools::hostname_to_ip(raw_host)[[1]][1]
+  raw_ip <- curl::nslookup(raw_host)
   
   dbConnect(
     RMariaDB::MariaDB(), 
@@ -60,7 +60,7 @@ etl_connect_prod <- function(con = NULL) {
     if (is.null(x$error)) return(con)
   }
   
-  pg_ip <- iptools::hostname_to_ip(pg_host)[[1]][1]
+  pg_ip <- curl::nslookup(pg_host)
   
   
   dbConnect(
@@ -203,7 +203,8 @@ etl_init_shadow_sensors <- function(reset = F) {
       soil_temp REAL,
       permittivity REAL,
       ec_bulk REAL,
-      ec_pore_water REAL
+      ec_pore_water REAL,
+      travel_time REAL
     );"
   )
   
@@ -409,7 +410,7 @@ etl_cron <- function(
 # etl_cron("shadow_to_prod_hologram.R", at = "19:14")
 # etl_cron("raw_to_shadow_kobo.R", at = "19:19")
 # etl_cron("shadow_to_prod_kobo.R", at = "19:24")
-# etl_cron("shadow_backup.R", at = "20:29")
+# etl_cron("shadow_backup.R", at = "20:29") # change to daily?
 #
 #  - To remove jobs later:
 # cronR::cron_ls()
@@ -417,3 +418,4 @@ etl_cron <- function(
 # etl_cron("shadow_backup.R", clear = T)
 #  - To clear all:
 # cronR::cron_clear()
+

@@ -149,6 +149,7 @@ parse_nodes <- function(elt) {
     stop("Unknown string version")
   }
   
+  
   # even if the node string is corrupted, the last bit should
   # always be SS, provided by gateway
   ss_idx <- length(clean_chunks)
@@ -192,6 +193,13 @@ parse_nodes <- function(elt) {
   
   # water_sensor_data ----
 
+  # 2020 update for 310 sensors, needing addl col in DB
+  fv <- stringr::str_extract(meta[["firmware_version"]], "[.0-9]+") %>% 
+    lubridate::ymd()
+  if (fv > lubridate::ymd("2020-05-28")) {
+    nm_list$TDR <- c(nm_list$TDR, "travel_time")
+  }
+  
   TDR <-  
     addressed_strings_to_char_matrix(
       clean_chunks[TDR_indices],

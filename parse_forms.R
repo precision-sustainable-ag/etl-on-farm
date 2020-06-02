@@ -42,12 +42,18 @@ parse_wsensor_install <- function(elt) {
     na.rm = T
   )
   
+  code <- elt$`What_is_your_Farm_Code` %>% 
+    stringr::str_to_upper() %>% 
+    stringr::str_trim() %>% 
+    stringr::str_extract("[0-9A-Z]{3}") %>% 
+    na.omit() %>% 
+    as.character()
+  
+  
   tibble(
     rawuid = elt$rawuid,
     parsed_at = Sys.time(),
-    code = elt$`What_is_your_Farm_Code` %>% 
-      stringr::str_to_upper() %>% 
-      stringr::str_trim(),
+    code = code,
     subplot = elt$`In_which_subplot_are_ur_sensors_installed` %>% 
       stringr::str_extract("[12]") %>% 
       as.integer(),
