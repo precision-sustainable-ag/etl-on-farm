@@ -55,6 +55,11 @@ parse_others <- function(elt) {
     return(NULL)
   }
   
+  # Especially disallow VSE (Steve Evett)
+  if (!stringr::str_detect(elt$data, "^V[0-9]")) {
+    stop("Unknown string version")
+  }
+  
   if (
     length(chunks) == 2 &&
     nchar(chunks[1]) == 1 &&
