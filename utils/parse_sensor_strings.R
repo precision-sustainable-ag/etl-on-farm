@@ -223,6 +223,9 @@ parse_nodes <- function(elt) {
       rawuid = meta$rawuid
     )
   
+  if (any(nchar(TDR$tdr_sensor_id) > 27)) {
+    stop("TDR sensor firmware version too long.")
+  }
   
   # ambient_sensor_data ----
   THum <- addressed_strings_to_char_matrix(
