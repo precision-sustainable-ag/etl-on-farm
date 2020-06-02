@@ -3,9 +3,9 @@ message(Sys.time(), "\n\n")
 x <- na.omit(stringr::str_match(commandArgs(), "--file=(.+)")[,2])
 if (length(x)) setwd(dirname(x))
 
-decolonize <- function(tm) {
-  tm <- gsub("[-:]", "_", tm)
-  gsub(" ", "__", tm)
+decolonize <- function(s) {
+  s <- stringr::str_replace_all(s, "[[:punct:]]", "_") 
+  stringr::str_replace_all(s, "[[:space:]]", "__")
 }
 
 suppressPackageStartupMessages(
