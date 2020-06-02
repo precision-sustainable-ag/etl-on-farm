@@ -33,8 +33,8 @@ loggit(
 
 
 source("secret.R")
-source("initializers.R")
-source("sql_constructors.R")
+source("utils/initializers.R")
+source("utils/sql_constructors.R")
 
 suppressPackageStartupMessages({
   library(DBI)

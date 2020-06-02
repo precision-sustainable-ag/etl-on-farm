@@ -26,7 +26,7 @@ quickly <- function(.f, timeout = 5, otherwise = NULL, quiet = FALSE) {
 }
 
 etl_connect_raw <- function(con = NULL) {
-  if (!exists("raw_user")) {source("secret.R")}
+  if (!exists("raw_user")) {source("utils/secret.R")}
   
   # if (!is.null(con)) {
   #   x <- purrr::safely(dbListTables)(con)
@@ -53,7 +53,7 @@ etl_connect_raw <- function(con = NULL) {
 }
 
 etl_connect_prod <- function(con = NULL) {
-  if (!exists("pg_user")) {source("secret.R")}
+  if (!exists("pg_user")) {source("utils/secret.R")}
   
   if (!is.null(con)) {
     x <- purrr::safely(dbListTables)(con)

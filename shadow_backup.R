@@ -32,7 +32,7 @@ loggit(
 )
 
 source("secret.R")
-source("initializers.R")
+source("utils/initializers.R")
 
 suppressPackageStartupMessages({
   library(dplyr)

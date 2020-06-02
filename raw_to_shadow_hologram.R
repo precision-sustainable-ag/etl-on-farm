@@ -32,8 +32,8 @@ loggit(
 )
 
 source("secret.R")
-source("initializers.R")
-source("parse_sensor_strings.R")
+source("utils/initializers.R")
+source("utils/parse_sensor_strings.R")
 
 suppressPackageStartupMessages({
   library(DBI)
