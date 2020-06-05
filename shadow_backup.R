@@ -33,6 +33,7 @@ loggit(
 
 source("secret.R")
 source("utils/initializers.R")
+source("utils/sql_constructors.R")
 
 suppressPackageStartupMessages({
   library(dplyr)
@@ -45,9 +46,7 @@ loggit(
   "INFO",
   "Repo status",
   output = capture.output(git2r::status(repos)) %>% 
-    paste(collapse = "\n") %>% 
-    stringr::str_replace_all("\n|\r", "<br>") %>% 
-    stringr::str_replace_all(":", "-")
+    sanitize_ndjson()
   )
 
 git2r::config(
@@ -152,9 +151,7 @@ loggit(
   "INFO",
   "Repo status",
   output = capture.output(git2r::status(repos)) %>% 
-    paste(collapse = "\n") %>% 
-    stringr::str_replace_all("\n|\r", "<br>") %>% 
-    stringr::str_replace_all(":", "-")
+    sanitize_ndjson()
 )
 
 git2r::add(
@@ -171,9 +168,7 @@ loggit(
   "INFO",
   "Repo status",
   output = capture.output(s) %>% 
-    paste(collapse = "\n") %>% 
-    stringr::str_replace_all("\n|\r", "<br>") %>% 
-    stringr::str_replace_all(":", "-")
+    sanitize_ndjson()
 )
 
 l <- s[c("staged", "unstaged")] %>% 
@@ -194,9 +189,7 @@ if (sum(l)) {
       ),
       all = TRUE
     )
-  ) %>% paste(collapse = "\n") %>% 
-    stringr::str_replace_all("\n|\r", "<br>") %>% 
-    stringr::str_replace_all(":", "-")
+  ) %>% sanitize_ndjson()
   
   loggit(
     "INFO",

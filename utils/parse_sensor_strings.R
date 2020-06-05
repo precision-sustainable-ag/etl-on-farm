@@ -201,7 +201,7 @@ parse_nodes <- function(elt) {
   # 2020 update for 310 sensors, needing addl col in DB
   fv <- stringr::str_extract(meta[["firmware_version"]], "[.0-9]+") %>% 
     lubridate::ymd()
-  if (fv > lubridate::ymd("2020-05-28")) {
+  if (fv >= lubridate::ymd("2020-05-28")) {
     nm_list$TDR <- c(nm_list$TDR, "travel_time")
   }
   

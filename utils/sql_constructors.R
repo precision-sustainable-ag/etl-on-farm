@@ -2,7 +2,8 @@ sanitize_ndjson <- function(s) {
   s %>% 
     paste(collapse = "\n") %>% 
     stringr::str_replace_all("\n|\r", "<br>") %>% 
-    stringr::str_replace_all(":", "-")
+    stringr::str_replace_all(":", "-") %>% 
+    stringr::str_replace_all("\t", "&emsp;&emsp;")
 }
 
 
