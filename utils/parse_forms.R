@@ -50,7 +50,7 @@ parse_wsensor_install <- function(elt) {
     as.character()
   
   
-  tibble(
+  ret <- tibble(
     rawuid = elt$rawuid,
     parsed_at = Sys.time(),
     code = code,
@@ -64,6 +64,10 @@ parse_wsensor_install <- function(elt) {
     notes = elt$`Any_issues_to_report_about_your_sensors` %||% NA,
     submitted_by = elt$`_submitted_by`
   )
+  
+  if (nrow(ret) == 0) {stop("Some essential item is missing from the form")}
+  
+  return(ret)
 }
 
 etl_parse_wsensor_install <- function(elt) {
