@@ -186,7 +186,8 @@ parse_nodes <- function(elt) {
   # tosses timestamps more than a day in the future or more than 180 days old
   if (
     get0("real_time", ifnotfound = Sys.time()) + 3600*24 < meta$timestamp ||
-    get0("real_time", ifnotfound = Sys.time()) - 180*3600*24 > meta$timestamp
+    get0("real_time", ifnotfound = Sys.time()) - 180*3600*24 > meta$timestamp ||
+    is.na(meta$timestamp)
   ) {
     stop("Invalid on-device timestamp:", lubridate::as_date(meta$timestamp))
   }
