@@ -95,6 +95,10 @@ parse_others <- function(elt) {
     stop("Possible truncated node data")
   }
   
+  if (is.na(ret$timestamp)) {
+    stop("Invalid on-device timestamp")
+  }
+
   ret
 }
 

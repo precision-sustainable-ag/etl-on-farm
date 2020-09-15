@@ -354,6 +354,7 @@ etl_cron <- function(
   scriptfile, 
   clear = F, debug = F, 
   at = format(Sys.time(), "%H:%M"),
+  freq = "hourly",
   where = getwd()
   ) {
   
@@ -373,7 +374,7 @@ etl_cron <- function(
     
     cronR::cron_add(
       cmd,
-      frequency = "hourly",
+      frequency = freq,
       at = at,
       id = scriptfile,
       tags = c("ETL", "PSAOF"),
@@ -410,7 +411,7 @@ etl_cron <- function(
 # etl_cron("shadow_to_prod_hologram.R", at = "19:14")
 # etl_cron("raw_to_shadow_kobo.R", at = "19:19")
 # etl_cron("shadow_to_prod_kobo.R", at = "19:24")
-# etl_cron("shadow_backup.R", at = "20:29") 
+# etl_cron("shadow_backup.R", at = "20:29", freq = "daily") 
 
 #  - To remove jobs later:
 # cronR::cron_ls()
