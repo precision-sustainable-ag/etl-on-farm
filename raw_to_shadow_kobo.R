@@ -186,6 +186,50 @@ loggit(
   rows = nrow(dbdw_to_store)
 )
 
+######
+
+message("TABLE decomp_biomass_dry__decomp_bag_collect; pulling")
+
+gotten_dbc <- union_all(
+  tbl(con_sh_f, "decomp_biomass_dry__decomp_bag_collect") %>% select(rawuid), 
+  tbl(con_sh_f, "needs_help") %>% select(rawuid)
+) %>% 
+  collect() %>% 
+  pull()
+
+dbc <- tbl(etl_connect_raw(con_raw), "kobo") %>% 
+  filter(
+    asset_name == "psa decomp bag collect",
+    !(uid %in% gotten_dbc)
+  ) %>% 
+  head(30) %>% 
+  collect()
+
+loggit(
+  "INFO",
+  "Found forms; `psa decomp bag collect`",
+  rows = nrow(dbc)
+)
+
+dbc_to_store <- dbc %>% 
+  purrr::pmap(rawdb_kobo_to_lst) %>% 
+  purrr::map(etl_parse_decomp_bag_collect) %>% 
+  dplyr::bind_rows()
+message("decomp bag collect parsed")
+
+
+rows_aff <- dbWriteTable(
+  con_sh_f,
+  "decomp_biomass_dry__decomp_bag_collect",
+  dbc_to_store,
+  append = T
+)
+
+loggit(
+  "INFO",
+  "decomp_biomass_dry__decomp_bag_collect pushed",
+  rows = nrow(dbc_to_store)
+)
 
 ######
 
