@@ -433,6 +433,57 @@ etl_cron <- function(
 
 }
 
+
+etl_create_shadow_forms_decomp_biomass_dry__decomp_bag_dry_wt <- function(reset = F) {
+  if (!file.exists("./db/forms.db")) {
+    stop("Forms database does not exist; first run `etl_init_shadow_forms()`")
+  }
+  
+  con_sh <- etl_connect_shadow(dbname = "forms")
+  tbls <- dbListTables(con_sh)
+  existing <- "decomp_biomass_dry__decomp_bag_dry_wt" %in% tbls
+  
+  if (reset && existing) {
+    confirmation <- askYesNo(
+      "Are you sure you want to clear the shadow forms DB?\n",
+      FALSE
+    )
+    
+    stopifnot(confirmation)
+    dbRemoveTable(con_sh, "decomp_biomass_dry__decomp_bag_dry_wt")
+  }
+  
+  if (!reset && existing) {
+    stop("Table already exists. Need to reset?")
+  }
+  
+  
+  # Keep track of errored rows
+  dbExecute(
+    con_sh,
+    "CREATE TABLE decomp_biomass_dry__decomp_bag_dry_wt (
+      sid INTEGER PRIMARY KEY AUTOINCREMENT,
+      rawuid INTEGER,
+      parsed_at INTEGER,
+      code TEXT,
+      subplot INTEGER,
+      subsample TEXT,
+      time INTEGER,
+      dry_biomass_wt REAL,
+      notes TEXT,
+      submitted_by TEXT,
+      pushed_to_prod INTEGER DEFAULT 0
+    );"
+  )
+  
+  result <- etl_summarise_shadow(con_sh)
+  dbDisconnect(con_sh)
+  
+  return(result)
+}
+
+
+
 # SETUP PROJECT: ----
 # -- Install libraries:
 #   - First entry only needed on dev machine, not server
@@ -453,6 +504,8 @@ etl_cron <- function(
 # etl_init_shadow_forms()
 # etl_create_shadow_forms_wsensor_install()
 # etl_create_shadow_forms_decomp_biomass_fresh__decomp_bag_pre_wt()
+# etl_create_shadow_forms_decomp_biomass_dry__decomp_bag_dry_wt()
+
 
 
 # -- Spin up cron jobs:
