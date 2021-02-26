@@ -69,7 +69,7 @@ parse_others <- function(elt) {
     return(NULL)
   }
   
-  if (length(chunks) != 8) {
+  if (length(chunks) < 8 | length(chunks) > 9) {
     stop("Not a data string or incorrect format")
     }
 
@@ -79,6 +79,10 @@ parse_others <- function(elt) {
     "timestamp"
     )
   
+  if (length(chunks) == 9) {
+    nms <- c(nms, "tower_signal_strength")
+  }
+  
   ret <- dplyr::bind_rows(safely_set_names(chunks, nms)) %>% 
     mutate(
       rawuid = elt$uid,
@@ -87,7 +91,8 @@ parse_others <- function(elt) {
       device_name = elt$deviceName
     ) %>% 
     mutate_at(vars(matches("^gw_")), as.numeric) %>% 
-    mutate_at(vars(any_of(c("timestamp", "ts_up"))), lubridate::as_datetime)
+    mutate_at(vars(any_of(c("timestamp", "ts_up"))), lubridate::as_datetime) %>% 
+    mutate_at(vars(matches("^tower")), as.integer)
   
   err_flag <- !isTRUE(as.numeric(ret$gateway_serial_no) > 21000000)
   
@@ -158,6 +163,9 @@ parse_nodes <- function(elt) {
     stop("Unknown string version")
   }
   
+  if (stringr::str_count(elt$data, "V20") > 1) {
+    stop("Multi-message collision")
+  }
   
   # even if the node string is corrupted, the last bit should
   # always be SS, provided by gateway
