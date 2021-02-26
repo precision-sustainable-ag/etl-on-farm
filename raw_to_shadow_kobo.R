@@ -36,6 +36,8 @@ source("secret.R")
 source("utils/initializers.R")
 source("utils/parse_forms.R")
 source("utils/forms/decomp_bag_pre_wt.R")
+source("utils/forms/decomp_bag_dry_wt.R")
+
 
 suppressPackageStartupMessages({
   library(DBI)
@@ -99,18 +101,18 @@ loggit(
 message("TABLE decomp_biomass_fresh__decomp_bag_pre_wt; pulling")
 
 gotten_dbpw <- union_all(
-  tbl(con_sh_f, "decomp_biomass_fresh__decomp_bag_pre_wt") %>% select(rawuid), 
+  tbl(con_sh_f, "decomp_biomass_fresh__decomp_bag_pre_wt") %>% select(rawuid),
   tbl(con_sh_f, "needs_help") %>% select(rawuid)
-) %>% 
-  collect() %>% 
+) %>%
+  collect() %>%
   pull()
 
-dbpw <- tbl(etl_connect_raw(con_raw), "kobo") %>% 
+dbpw <- tbl(etl_connect_raw(con_raw), "kobo") %>%
   filter(
     asset_name == "psa decomp bag pre wt",
     !(uid %in% gotten_dbpw)
-  ) %>% 
-  head(30) %>% 
+  ) %>%
+  head(30) %>%
   collect()
 
 loggit(
@@ -119,9 +121,9 @@ loggit(
   rows = nrow(dbpw)
 )
 
-dbpw_to_store <- dbpw %>% 
-  purrr::pmap(rawdb_kobo_to_lst) %>% 
-  purrr::map(etl_parse_decomp_bag_pre_wt) %>% 
+dbpw_to_store <- dbpw %>%
+  purrr::pmap(rawdb_kobo_to_lst) %>%
+  purrr::map(etl_parse_decomp_bag_pre_wt) %>%
   dplyr::bind_rows()
 message("decomp bag pre wt parsed")
 
@@ -138,6 +140,54 @@ loggit(
   "decomp_biomass_fresh__decomp_bag_pre_wt pushed",
   rows = nrow(dbpw_to_store)
 )
+
+######
+
+message("TABLE decomp_biomass_dry__decomp_bag_dry_wt; pulling")
+
+gotten_dbdw <- union_all(
+  tbl(con_sh_f, "decomp_biomass_dry__decomp_bag_dry_wt") %>% select(rawuid), 
+  tbl(con_sh_f, "needs_help") %>% select(rawuid)
+) %>% 
+  collect() %>% 
+  pull()
+
+dbdw <- tbl(etl_connect_raw(con_raw), "kobo") %>% 
+  filter(
+    asset_name == "psa decomp bag dry wt",
+    !(uid %in% gotten_dbdw)
+  ) %>% 
+  head(30) %>% 
+  collect()
+
+loggit(
+  "INFO",
+  "Found forms; `psa decomp bag dry wt`",
+  rows = nrow(dbdw)
+)
+
+dbdw_to_store <- dbdw %>% 
+  purrr::pmap(rawdb_kobo_to_lst) %>% 
+  purrr::map(etl_parse_decomp_bag_dry_wt) %>% 
+  dplyr::bind_rows()
+message("decomp bag dry wt parsed")
+
+
+rows_aff <- dbWriteTable(
+  con_sh_f,
+  "decomp_biomass_dry__decomp_bag_dry_wt",
+  dbdw_to_store,
+  append = T
+)
+
+loggit(
+  "INFO",
+  "decomp_biomass_dry__decomp_bag_dry_wt pushed",
+  rows = nrow(dbdw_to_store)
+)
+
+
+######
 
 dbDisconnect(con_sh_f)
 

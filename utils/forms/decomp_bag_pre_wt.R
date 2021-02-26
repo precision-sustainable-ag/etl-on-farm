@@ -28,7 +28,7 @@ parse_decomp_bag_pre_wt <- function(elt) {
   
   weights <- elt %>% 
     tibble::enframe() %>% 
-    filter(stringr::str_detect(name, "group_")) %>% 
+    filter(stringr::str_detect(name, "^group")) %>% 
     tidyr::unnest(cols = "value") %>% 
     tidyr::separate(name, c("group", "var"), sep = "/") %>% 
     mutate(
@@ -43,8 +43,8 @@ parse_decomp_bag_pre_wt <- function(elt) {
   
   na_flag <- any(is.na(weights$pre_bag_wt_grams))
   
-  if (isTRUE(any(!barcode_flag))) {
-    stop("Malformed barcodes")
+  if (any(!barcode_flag) | any(is.na(barcode_flag))) {
+    stop("Malformed barcode(s)")
   }
   
   if (na_flag) {
