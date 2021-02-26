@@ -64,12 +64,6 @@ parse_decomp_bag_dry_wt <- function(elt) {
     select(rawuid, parsed_at, everything())
 }
 
-x %>% 
-  purrr::pmap(rawdb_kobo_to_lst) %>% 
-  purrr::map(purrr::safely(parse_decomp_bag_dry_wt)) %>% 
-  purrr::map("result") %>% 
-  dplyr::bind_rows()
-
 
 
 etl_parse_decomp_bag_dry_wt <- function(elt) {
