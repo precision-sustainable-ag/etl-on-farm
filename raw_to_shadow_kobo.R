@@ -37,6 +37,9 @@ source("utils/initializers.R")
 source("utils/parse_forms.R")
 source("utils/forms/decomp_bag_pre_wt.R")
 source("utils/forms/decomp_bag_dry_wt.R")
+source("utils/forms/decomp_bag_collect.R")
+source("utils/forms/biomass_decomp_bag.R")
+
 
 
 suppressPackageStartupMessages({
@@ -229,6 +232,100 @@ loggit(
   "INFO",
   "decomp_biomass_dry__decomp_bag_collect pushed",
   rows = nrow(dbc_to_store)
+)
+
+######
+
+message("TABLE biomass_in_field__biomass_decomp_bag; pulling")
+
+gotten_bif <- union_all(
+  tbl(con_sh_f, "biomass_in_field__biomass_decomp_bag") %>% 
+    select(rawuid), 
+  tbl(con_sh_f, "needs_help") %>% 
+    filter(target_tbl == "biomass_in_field__biomass_decomp_bag") %>% 
+    select(rawuid) 
+) %>% 
+  collect() %>% 
+  pull()
+
+bif <- tbl(etl_connect_raw(con_raw), "kobo") %>% 
+  filter(
+    asset_name == "psa biomass decomp bag",
+    !(uid %in% gotten_bif)
+  ) %>% 
+  head(30) %>% 
+  collect()
+
+loggit(
+  "INFO",
+  "Found forms; `psa biomass decomp bag`",
+  rows = nrow(bif)
+)
+
+bif_to_store <- bif %>% 
+  purrr::pmap(rawdb_kobo_to_lst) %>% 
+  purrr::map(etl_parse_biomass_decomp_bag__biomass_in_field) %>% 
+  dplyr::bind_rows()
+message("biomass_in_field parsed")
+
+
+rows_aff <- dbWriteTable(
+  con_sh_f,
+  "biomass_in_field__biomass_decomp_bag",
+  bif_to_store,
+  append = T
+)
+loggit(
+  "INFO",
+  "biomass_in_field__biomass_decomp_bag pushed",
+  rows = nrow(bif_to_store)
+)
+
+######
+
+message("TABLE decomp_biomass_fresh__biomass_decomp_bag; pulling")
+
+gotten_bif <- union_all(
+  tbl(con_sh_f, "decomp_biomass_fresh__biomass_decomp_bag") %>% 
+    select(rawuid), 
+  tbl(con_sh_f, "needs_help") %>% 
+    filter(target_tbl == "decomp_biomass_fresh__biomass_decomp_bag") %>% 
+    select(rawuid) 
+) %>% 
+  collect() %>% 
+  pull()
+
+bif <- tbl(etl_connect_raw(con_raw), "kobo") %>% 
+  filter(
+    asset_name == "psa biomass decomp bag",
+    !(uid %in% gotten_bif)
+  ) %>% 
+  head(30) %>% 
+  collect()
+
+loggit(
+  "INFO",
+  "Found forms; `psa biomass decomp bag`",
+  rows = nrow(bif)
+)
+
+bif_to_store <- bif %>% 
+  purrr::pmap(rawdb_kobo_to_lst) %>% 
+  purrr::map(etl_parse_biomass_decomp_bag__decomp_biomass_fresh) %>% 
+  dplyr::bind_rows()
+message("biomass_in_field parsed")
+
+
+rows_aff <- dbWriteTable(
+  con_sh_f,
+  "decomp_biomass_fresh__biomass_decomp_bag",
+  bif_to_store,
+  append = T
+)
+loggit(
+  "INFO",
+  "decomp_biomass_fresh__biomass_decomp_bag pushed",
+  rows = nrow(bif_to_store)
 )
 
 ######
