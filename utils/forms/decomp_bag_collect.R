@@ -45,7 +45,7 @@ parse_decomp_bag_collect <- function(elt) {
   
   barcode_flag <- stringr::str_detect(
     bags$barcode_bag, 
-    "^[A-Z]{3}-[12]-[AB]-[0-5]$"
+    "^[A-Z0-9]{3}-[12]-[AB]-[0-5]$"
   )
   
   if (any(!barcode_flag) | any(is.na(barcode_flag))) {

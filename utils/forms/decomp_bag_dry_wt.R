@@ -34,7 +34,7 @@ parse_decomp_bag_dry_wt <- function(elt) {
 
   barcode_flag <- stringr::str_detect(
     weights$decomp_bag,
-    "^[A-Z]{3}-[12]-[AB]-[0-5]$"
+    "^[A-Z0-9]{3}-[12]-[AB]-[0-5]$"
   )
 
   na_flag <- any(is.na(weights$dry_wt))

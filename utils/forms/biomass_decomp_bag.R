@@ -131,7 +131,7 @@ parse_biomass_decomp_bag__biomass_in_field <- function(elt) {
     stop("Malformed/empty bag weight(s).")
   }
   
-  if (is.null(elt$code) | !stringr::str_detect(elt$code, "^[A-Z]{3}$")) {
+  if (is.null(elt$code) | !stringr::str_detect(elt$code, "^[A-Z0-9]{3}$")) {
     stop("Missing/malformed farm code.")
   }
   
@@ -265,7 +265,7 @@ parse_biomass_decomp_bag__decomp_biomass_fresh <- function(elt) {
   
   barcode_flag <- stringr::str_detect(
     weights$barcode_bag, 
-    "^[A-Z]{3}-[12]-[AB]-[0-5]$"
+    "^[A-Z0-9]{3}-[12]-[AB]-[0-5]$"
   )
   
   if (any(!barcode_flag) | any(is.na(barcode_flag))) {

@@ -38,7 +38,7 @@ parse_decomp_bag_pre_wt <- function(elt) {
   
   barcode_flag <- stringr::str_detect(
     weights$barcode_bag, 
-    "^[A-Z]{3}-[12]-[AB]-[0-5]$"
+    "^[A-Z0-9]{3}-[12]-[AB]-[0-5]$"
   )
   
   na_flag <- any(is.na(weights$pre_bag_wt_grams))
