@@ -35,6 +35,7 @@ loggit(
 source("secret.R")
 source("utils/initializers.R")
 source("utils/parse_forms.R")
+source("utils/forms/water_sensor_install.R")
 source("utils/forms/decomp_bag_pre_wt.R")
 source("utils/forms/decomp_bag_dry_wt.R")
 source("utils/forms/decomp_bag_collect.R")
