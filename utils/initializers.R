@@ -340,7 +340,11 @@ etl_create_shadow_forms_wsensor_install <- function(reset = F) {
       time_end INTEGER,
       notes TEXT,
       submitted_by TEXT,
-      pushed_to_prod INTEGER DEFAULT 0
+      pushed_to_prod INTEGER DEFAULT 0,
+      bare_lat REAL,
+      bare_lon REAL,
+      cover_lat REAL,
+      cover_lon REAL
     );"
   )
   
