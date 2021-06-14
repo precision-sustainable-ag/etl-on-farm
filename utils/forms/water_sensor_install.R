@@ -47,9 +47,11 @@ wsensor_install_1rep <- function(elt) {
   code <- elt$`What_is_your_Farm_Code` %>% 
     stringr::str_to_upper() %>% 
     stringr::str_trim() %>% 
-    stringr::str_extract("[0-9A-Z]{3}") %>% 
+    stringr::str_extract("^[0-9A-Z]{3}") %>% 
     na.omit() %>% 
     as.character()
+  
+  assert_active(code, lubridate::year(begin))
   
   
   ret <- tibble(
@@ -110,7 +112,14 @@ wsensor_install_2rep <- function(elt) {
     stop("Incorrect form version, needs inspection")
   }
   
-  cd <- elt$`farm_info_group/code`
+  cd <- elt$`farm_info_group/code` %>% 
+    stringr::str_trim() %>% 
+    stringr::str_to_upper()
+  
+  if (!stringr::str_detect(cd, "^[A-Z0-9]{3}$")) {
+    stop("Malformed farm code.")
+  }
+  
   gw <- elt$barcode_gateway
   begin <- elt$start %>% lubridate::as_datetime()
   
@@ -118,6 +127,7 @@ wsensor_install_2rep <- function(elt) {
     stop("Missing farm code or gateway serial.")
   }
   
+  assert_active(cd, lubridate::year(begin))
   
   idx <- stringr::str_detect(names(elt), "node")
   
