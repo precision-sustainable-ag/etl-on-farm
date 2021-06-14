@@ -60,6 +60,11 @@ parse_others <- function(elt) {
     stop("Unknown string version")
   }
   
+  # Node strings missing sensors return a double tilde at the end
+  if (stringr::str_detect(elt$data, "~~-[0-9]+$")) {
+    stop("Node string missing all sensors")
+  }
+  
   if (
     length(chunks) == 2 &&
     nchar(chunks[1]) == 1 &&
@@ -154,6 +159,13 @@ parse_nodes <- function(elt) {
   # TODO check this regex - Correct I think.
   not_garbage <- stringr::str_detect(chunked_s, "^[-:.~0-9A-Za-z+_ ]+$")
   clean_chunks <- chunked_s[not_garbage]
+  
+  has_ll <- stringr::str_detect(chunked_s, "~[-0-9.]+,[-0-9.]+~")
+  
+  # Discard node strings that include the latlong for Evett
+  if (isTRUE(has_ll[1])) {
+    return(NULL)
+  }
   
   # If there's a problem in the metadata, throw out the whole obs
   if (not_garbage[1] == F) {

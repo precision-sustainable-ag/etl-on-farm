@@ -60,7 +60,7 @@ message(
 
 
 recent_sensor_rows <- tbl(etl_connect_raw(con_raw), "hologram") %>% 
-  filter(uid > last_gotten_sensor, uid < last_gotten_sensor + 800) %>% 
+  filter(uid > last_gotten_sensor, uid < last_gotten_sensor + 1800) %>% 
   collect()
 
 loggit(
