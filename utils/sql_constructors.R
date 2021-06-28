@@ -135,6 +135,10 @@ etl_upsert_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
       ~lubridate::as_datetime(.)
     )
   
+  # temporary fix to eliminate bigint datetimes until 2038
+  from_shadow <- from_shadow %>% 
+    filter(!is.na(timestamp))
+  
   temp_tb <- glue::glue("temp_{prod_tb}")
   
   dbWriteTable(
