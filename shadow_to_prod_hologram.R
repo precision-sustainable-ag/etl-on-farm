@@ -50,7 +50,7 @@ rawuids_to_push <- tbl(con_sh_s, "from_raw") %>%
   filter(pushed_to_prod == 0) %>% 
   collect() %>% 
   pull(rawuid) %>% 
-  head(1500) %>% 
+  head(7500) %>% 
   unique()
 
 loggit(
