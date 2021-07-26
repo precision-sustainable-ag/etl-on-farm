@@ -670,6 +670,7 @@ etl_create_shadow_forms_decomp_biomass_fresh__biomass_decomp_bag <- function(res
 # etl_cron("raw_to_shadow_kobo.R", at = "19:19")
 # etl_cron("shadow_to_prod_kobo.R", at = "19:24")
 # etl_cron("shadow_backup.R", at = "20:29", freq = "daily") 
+# etl_cron("prefill_rows.R", at = "19:29")
 
 #  - To remove jobs later:
 # cronR::cron_ls()

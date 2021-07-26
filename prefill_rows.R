@@ -53,6 +53,10 @@ fill_rows_create <- function(con, tbl_nm, preset_cols = list()) {
   
   to_fill_codes <- setdiff(enrolled_codes, filled_codes)
   
+  message(
+    glue::glue("Found {length(to_fill_codes)} sites for `{tbl_nm}`")
+  )
+  
   to_fill_tbl <- expand.grid(
     c(
       list(code = to_fill_codes),
@@ -80,7 +84,9 @@ etl_fill_rows <- function(con, tbl_nm, preset_cols = list()) {
   if (!is.null(y$error)) {
     stop(as.character(y$error))
   } else {
-    message("Successfully filled ", y$result, " rows into `", tbl_nm, "`")
+    message(
+      glue::glue("Successfully filled {y$result} rows into `{tbl_nm}`")
+      )
   }
   
   return(y)
