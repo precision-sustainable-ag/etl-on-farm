@@ -28,7 +28,7 @@ off <- Sys.time() - real_time
 loggit(
   "INFO",
   glue::glue("Offset of this server and real time is {format(off)}"),
-  offset_s = off
+  offset_s = as.double(off, units = "secs")
 )
 
 
