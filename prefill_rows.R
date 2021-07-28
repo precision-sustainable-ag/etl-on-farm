@@ -38,6 +38,7 @@ suppressPackageStartupMessages({
   library(DBI)
   library(dplyr)
   library(dbplyr)
+  library(purrr)
 })
 
 # Do the work ----
