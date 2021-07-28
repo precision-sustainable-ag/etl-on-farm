@@ -69,6 +69,12 @@ fill_rows_create <- function(con, tbl_nm, preset_cols = list()) {
     arrange(code)
 }
 
+tidy_safe_results <- function(elt) {
+  list(
+    result = elt$result %||% NA,
+    error = elt$error %||% NA
+  )
+}
 
 # Wrap any errors ----
 
@@ -138,7 +144,8 @@ table_row_results <- purrr::imap(
 )
 
 outlog <- table_row_results %>% 
-  jsonlite::toJSON(auto_unbox = T)
+  purrr::map(tidy_safe_results) %>% 
+  jsonlite::toJSON()
 
 jsonlite::prettify(outlog)
 
