@@ -145,7 +145,12 @@ jsonlite::prettify(outlog)
 loggit::loggit(
   "INFO",
   "inserted_rows",
-  list(data = as.character(outlog))
+  list(
+    data = stringr::str_remove_all(
+      jsonlite::base64_enc(outlog), 
+      "\n"
+      )
+    )
   )
 
 dbDisconnect(admin_con)
