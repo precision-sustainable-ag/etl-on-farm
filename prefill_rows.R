@@ -47,6 +47,9 @@ fill_rows_create <- function(con, tbl_nm, preset_cols = list()) {
   
   enrolled_codes <- tbl(con, "site_information") %>% 
     pull(code)
+  # TODO: pass in arg "protocol"
+  #   check site_information.protocols_enrolled for a match
+  #   filter this enrolled_codes array for it
   
   filled_codes <- tbl(con, tbl_nm) %>% 
     distinct(code) %>% 
@@ -54,8 +57,16 @@ fill_rows_create <- function(con, tbl_nm, preset_cols = list()) {
   
   to_fill_codes <- setdiff(enrolled_codes, filled_codes)
   
-  message(
-    glue::glue("Found {length(to_fill_codes)} sites for `{tbl_nm}`")
+  # message(
+  #   glue::glue("Found {length(to_fill_codes)} sites for `{tbl_nm}`")
+  # )
+  
+  loggit::loggit(
+    "INFO",
+    "found_sites",
+    table = tbl_nm,
+    n = length(to_fill_codes),
+    sites = glue::glue_collapse(c(to_fill_codes, ""), "-")
   )
   
   to_fill_tbl <- expand.grid(
@@ -166,3 +177,29 @@ dbDisconnect(admin_con)
 message("Execution end")
 
 set_logfile(logfile = NULL, confirm = F)
+
+
+#### parse logs ----
+# dir(
+#   log_dir,
+#   full.names = T,
+#   pattern = "*prefill*"
+# ) %>% 
+#   purrr::set_names() %>% 
+#   purrr::map(readr::read_lines) %>% 
+#   purrr::map(~stringr::str_subset(.x, "data")) %>% 
+#   purrr::map(~jsonlite::fromJSON(.x, simplifyVector = F)) %>% 
+#   purrr::map(tibble::as_tibble) %>%
+#   bind_rows(.id = "file") %>% 
+#   mutate(
+#     data = purrr::map(
+#       data, 
+#       ~jsonlite::base64_dec(.x) %>% 
+#         rawToChar() %>% 
+#         jsonlite::fromJSON()
+#     )
+#   ) %>% 
+#   mutate(data = purrr::map(data, tibble::enframe)) %>% 
+#   tidyr::unnest(data) %>% 
+#   mutate(value = purrr::map(value, tibble::as_tibble)) %>% 
+#   tidyr::unnest(value)
