@@ -46,6 +46,7 @@ suppressPackageStartupMessages({
 fill_rows_create <- function(con, tbl_nm, preset_cols = list()) {
   
   enrolled_codes <- tbl(con, "site_information") %>% 
+    filter(protcols_enrolled != "-999") %>% 
     pull(code)
   # TODO: pass in arg "protocol"
   #   check site_information.protocols_enrolled for a match
@@ -57,9 +58,6 @@ fill_rows_create <- function(con, tbl_nm, preset_cols = list()) {
   
   to_fill_codes <- setdiff(enrolled_codes, filled_codes)
   
-  # message(
-  #   glue::glue("Found {length(to_fill_codes)} sites for `{tbl_nm}`")
-  # )
   
   loggit::loggit(
     "INFO",
