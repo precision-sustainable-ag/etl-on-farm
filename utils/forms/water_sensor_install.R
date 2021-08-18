@@ -42,7 +42,8 @@ wsensor_install_1rep <- function(elt) {
     (elt$`What_day_did_you_install_the_sensors` %||% NA) %>% 
       lubridate::as_datetime(),
     na.rm = T
-  )
+  ) %>% 
+    lubridate::floor_date("day")
   
   code <- elt$`What_is_your_Farm_Code` %>% 
     stringr::str_to_upper() %>% 
@@ -121,7 +122,8 @@ wsensor_install_2rep <- function(elt) {
   }
   
   gw <- elt$barcode_gateway
-  begin <- elt$start %>% lubridate::as_datetime()
+  begin <- elt$start %>% lubridate::as_datetime() %>% 
+    lubridate::floor_date("day")
   
   if (is.null(cd) | is.null(gw)) {
     stop("Missing farm code or gateway serial.")

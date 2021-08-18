@@ -338,6 +338,13 @@
       "Repository": "CRAN",
       "Hash": "f3c960f0105f2ed179460864979fc37c"
     },
+    "progress": {
+      "Package": "progress",
+      "Version": "1.2.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "14dc9f7a3c91ebb14ec5bb9208a07061"
+    },
     "purrr": {
       "Package": "purrr",
       "Version": "0.3.3",
