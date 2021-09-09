@@ -38,14 +38,14 @@ etl_connect_raw <- function(con = NULL) {
     if (!is.null(x)) return(con)
   }
   
-  raw_ip <- curl::nslookup(raw_host)
+  # raw_ip <- curl::nslookup(raw_host)
   
   dbConnect(
     RMariaDB::MariaDB(), 
     username = raw_user,
     password = raw_password,
     dbname = raw_dbname,
-    host = raw_ip,
+    host = raw_host, # raw_ip,
     port = raw_port,
     program_name = "R_Puller_Parser_v0.1",
     connect_timeout = 10
