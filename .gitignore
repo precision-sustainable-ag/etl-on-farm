@@ -119,6 +119,7 @@ $RECYCLE.BIN/
 .V8history
 
 secret.R
+secret_old_fed_creds.R
 README.html
 
 db/*.db
