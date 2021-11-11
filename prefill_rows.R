@@ -46,7 +46,7 @@ suppressPackageStartupMessages({
 fill_rows_create <- function(con, tbl_nm, preset_cols = list()) {
   
   enrolled_codes <- tbl(con, "site_information") %>% 
-    filter(protocols_enrolled != "-999") %>% 
+    filter(protocols_enrolled != "-999" | is.na(protocols_enrolled)) %>% 
     pull(code)
   # TODO: pass in arg "protocol"
   #   check site_information.protocols_enrolled for a match
@@ -138,6 +138,7 @@ table_row_dictionary <- list(
     subsample = c("A", "B"),
     time = 0:5
   ),
+  "farm_history" = list(),
   "gps_corners" = list(
     subplot = 1:2,
     treatment = c("B", "C"),
