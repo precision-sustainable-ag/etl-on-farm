@@ -143,6 +143,26 @@ table_row_dictionary <- list(
     subplot = 1:2,
     treatment = c("B", "C"),
     corner_index = 1:4
+  ),
+  "yield_in_field" = list(
+    subplot = 1:2,
+    treatment = c("B", "C"),
+    row = c("R1", "R2")
+  ),
+  "yield_corn" = list(
+    subplot = 1:2,
+    treatment = c("B", "C"),
+    row = c("R1", "R2")
+  ),
+  "yield_cotton" = list(
+    subplot = 1:2,
+    treatment = c("B", "C"),
+    row = c("R1", "R2")
+  ),
+  "yield_soybeans" = list(
+    subplot = 1:2,
+    treatment = c("B", "C"),
+    row = c("R1", "R2")
   )
 )
 
