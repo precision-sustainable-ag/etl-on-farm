@@ -144,6 +144,15 @@ table_row_dictionary <- list(
     treatment = c("B", "C"),
     corner_index = 1:4
   ),
+  "protocol_enrollment" = list(
+    farm_history = 1,
+    in_field_biomass = 1,
+    decomp_biomass = 1,
+    soil_texture = 1,
+    cash_crop_yield = 1,
+    gps_locations = 1,
+    sensor_data = 1
+  ),
   "yield_in_field" = list(
     subplot = 1:2,
     treatment = c("B", "C"),
