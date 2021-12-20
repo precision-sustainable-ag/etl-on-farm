@@ -65,6 +65,13 @@ parse_others <- function(elt) {
     stop("Node string missing all sensors")
   }
   
+  has_ll <- stringr::str_detect(elt$data, "~[-0-9.]+,[-0-9.]+~")
+
+  # Discard node strings that include the latlong for Evett
+  if (isTRUE(has_ll)) {
+    return(NULL)
+  }
+  
   if (
     length(chunks) == 2 &&
     nchar(chunks[1]) == 1 &&
