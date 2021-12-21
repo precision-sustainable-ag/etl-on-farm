@@ -255,6 +255,91 @@ etl_init_shadow_sensors <- function(reset = F) {
   return(result)
 }
 
+etl_init_shadow_stresscams <- function(reset = F) {
+  if (file.exists("./db/stresscams.db") && !reset) {
+    stop("Stresscam database already exists. Need to reset?")
+  }
+  
+  if (file.exists("./db/stresscams.db") && reset) {
+    confirmation <- askYesNo(
+      "Are you sure you want to clear the shadow stresscams DB?\n",
+      FALSE
+    )
+    
+    stopifnot(confirmation)
+    
+    file.create("./db/stresscams.db")
+  }
+  
+  if (!file.exists("./db/stresscams.db")) {file.create("./db/stresscams.db")}
+  
+  con_sh <- etl_connect_shadow(dbname = "stresscams")
+  
+  # Keep track of pulled rows
+  dbExecute(
+    con_sh,
+    "CREATE TABLE from_raw (
+      sid INTEGER PRIMARY KEY AUTOINCREMENT,
+      rawuid INTEGER,
+      pushed_to_prod INTEGER DEFAULT 0
+    );"
+  )
+  
+  dbWriteTable(
+    con_sh,
+    "from_raw",
+    data.frame(rawuid = 0),
+    append = TRUE
+  )
+  
+  # Keep track of errored rows
+  dbExecute(
+    con_sh,
+    "CREATE TABLE needs_help (
+      sid INTEGER PRIMARY KEY AUTOINCREMENT,
+      rawuid INTEGER,
+      err TEXT,
+      fixed INTEGER DEFAULT 0
+    );"
+  )
+  
+  # Store stresscam info
+  dbExecute(
+    con_sh,
+    "CREATE TABLE stresscam_data (
+      sid INTEGER PRIMARY KEY AUTOINCREMENT,
+      rawuid INTEGER,
+      device_id INTEGER,
+      dev_id_key TEXT,
+      firmware_version TEXT,
+      timestamp_utc TEXT,
+      timestamp_local TEXT,
+      timestamp_zone TEXT,
+      ts_up INTEGER,
+      cpu_temp REAL,
+      sd_free REAL,
+      mode TEXT,
+      crop TEXT,
+      code TEXT,
+      rep INTEGER,
+      trt TEXT,
+      file TEXT,
+      P_WS_0 REAL,
+      P_WS_1 REAL,
+      P_WS_2 REAL,
+      P_WS_3 REAL,
+      P_WS_4 REAL,
+      P_WS_5 REAL,
+      P_WS REAL
+    );"
+  )
+  
+  result <- etl_summarise_shadow(con_sh)
+  
+  dbDisconnect(con_sh)
+  
+  return(result)
+}
 
 
 etl_init_shadow_forms <- function(reset = F) {
@@ -652,6 +737,7 @@ etl_create_shadow_forms_decomp_biomass_fresh__biomass_decomp_bag <- function(res
 
 # -- Execute initialization:
 # etl_init_shadow_sensors()
+# etl_init_shadow_stresscams()
 # etl_init_shadow_forms()
 # etl_create_shadow_forms_wsensor_install()
 # etl_create_shadow_forms_decomp_biomass_fresh__decomp_bag_pre_wt()
