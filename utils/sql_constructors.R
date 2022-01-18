@@ -181,21 +181,22 @@ etl_upsert_stresscams <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
   from_shadow <- tbl(shad_con, shadow_tb) %>% 
     filter(rawuid %in% rawuids) %>%
     select(-sid) %>% 
-    collect()# %>% 
-    #mutate_at(
-    #  vars(matches(c("ts_up", "timestamp"))),
-    #  ~lubridate::as_datetime(.)
-    #)
+    collect() %>% 
+    mutate_at(
+      vars(matches(c("ts_up", "timestamp_utc"))),
+      ~lubridate::as_datetime(.)
+    )
   
   # temporary fix to eliminate bigint datetimes until 2038
-  #from_shadow <- from_shadow %>% 
-  #  filter(!is.na(timestamp_utc))
+  from_shadow <- from_shadow %>%
+   filter(!is.na(timestamp_utc))
   
   temp_tb <- glue::glue("temp_{prod_tb}")
   
   dbWriteTable(
     prod_con, temp_tb, from_shadow, 
-    temporary = TRUE, overwrite = TRUE
+    temporary = TRUE, overwrite = TRUE,
+    field.types = c("probabilities" = "jsonb")
   )
   
   nms_temp <- names(from_shadow)
