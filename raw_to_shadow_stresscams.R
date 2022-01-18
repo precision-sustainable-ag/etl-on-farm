@@ -60,7 +60,7 @@ message(
 
 
 recent_stresscam_rows <- tbl(etl_connect_raw(con_raw), "stresscam_hologram_data") %>% 
-  filter(uid > last_gotten_row, uid < last_gotten_row + 200) %>% 
+  filter(uid > last_gotten_row, uid < last_gotten_row + 1200) %>% 
   collect()
 
 loggit(

@@ -31,7 +31,7 @@ parse_stresscams <- function(elt) {
   
   if (is.na(local_time)) { stop("Invalid on-device timestamp") }
 
-  probs <- elt$data[stringr::str_detect(names(elt$data), "^P_WS_")]
+  probs <- elt$data[stringr::str_detect(names(elt$data), "^P_WS_[0-9]")]
   probs_string <- jsonlite::toJSON(probs, auto_unbox = T) %>% 
     as.character()
   
