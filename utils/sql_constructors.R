@@ -168,6 +168,58 @@ etl_upsert_sensors <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
   
 }
 
+# Pull specified rows from shadow (matching rawuids)
+#   Push them into temp table in prod
+#   Find matching names between temp table and target table
+#   Construct upsert query that inserts matching cols
+#     UNLESS that violates name of unicity constraint (from pgAdmin)
+#     in that case skip the row
+etl_upsert_stresscams <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
+  prod_con <- etl_connect_prod()
+  shad_con <- etl_connect_shadow("stresscams")
+  
+  from_shadow <- tbl(shad_con, shadow_tb) %>% 
+    filter(rawuid %in% rawuids) %>%
+    select(-sid) %>% 
+    collect()# %>% 
+    #mutate_at(
+    #  vars(matches(c("ts_up", "timestamp"))),
+    #  ~lubridate::as_datetime(.)
+    #)
+  
+  # temporary fix to eliminate bigint datetimes until 2038
+  #from_shadow <- from_shadow %>% 
+  #  filter(!is.na(timestamp_utc))
+  
+  temp_tb <- glue::glue("temp_{prod_tb}")
+  
+  dbWriteTable(
+    prod_con, temp_tb, from_shadow, 
+    temporary = TRUE, overwrite = TRUE
+  )
+  
+  nms_temp <- names(from_shadow)
+  nms_prod <- dbListFields(prod_con, prod_tb)
+  
+  nms_match <- intersect(nms_temp, nms_prod)
+  
+  query <- upsert_do_nothing(
+    temp_tb, prod_tb, nms_match, unicity
+  )
+  
+  rows_affected <- purrr::safely(dbExecute)(prod_con, query)
+  
+  dbDisconnect(prod_con)
+  dbDisconnect(shad_con)
+  
+  if (is.null(rows_affected$error)) {
+    return(rows_affected$result)
+  } else {
+    stop(sanitize_ndjson(rows_affected$error))
+  }
+  
+}
+
 
 # Like the sensor upsert, except pass in a local DF instead of the name of
 #   the shadow DB table. The forms require some reparsing, esp of times
