@@ -64,55 +64,19 @@ if (length(rawuids_to_push) == 0) {
   set_logfile(logfile = NULL)
 }
 
-rows_aff <- etl_upsert_sensors(
-  "stresscam_data", 
-  "stresscam_data", 
+rows_aff <- etl_upsert_stresscams(
+  "stresscam_ratings", 
+  "stresscam_ratings", 
   rawuids_to_push,
   unicity = "stresscam_device_id_timestamp_utc_key"
 )
 
 loggit(
   "INFO",
-  "water_gateway_data",
+  "stresscam_ratings",
   rows = rows_aff
 )
 
-# rows_aff <- etl_upsert_sensors(
-#   "water_node_data", 
-#   "water_node_data", 
-#   rawuids_to_push,
-#   unicity = "water_node_data_node_serial_no_timestamp_key"
-# )
-# loggit(
-#   "INFO",
-#   "water_node_data",
-#   rows = rows_aff
-# )
-# 
-# rows_aff <- etl_upsert_sensors(
-#   "water_sensor_data", 
-#   "water_sensor_data", 
-#   rawuids_to_push,
-#   unicity = "water_sensor_data_node_serial_no_timestamp_tdr_address_key"
-# )
-# loggit(
-#   "INFO",
-#   "water_sensor_data",
-#   rows = rows_aff
-# )
-# 
-# rows_aff <- etl_upsert_sensors(
-#   "ambient_sensor_data", 
-#   "ambient_sensor_data", 
-#   rawuids_to_push,
-#   unicity = "ambient_sensor_data_node_serial_no_timestamp_key"
-# )
-# 
-# loggit(
-#   "INFO",
-#   "ambient_sensor_data",
-#   rows = rows_aff
-# )
 
 
 rows_aff <- etl_mark_pushed(con_sh_st, "from_raw", rawuids_to_push)
