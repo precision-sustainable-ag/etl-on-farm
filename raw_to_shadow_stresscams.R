@@ -97,19 +97,19 @@ message("Writing to shadow DB")
 
 rows_aff <- dbWriteTable(
   con_sh_st,
-  "stresscam_data",
+  "stresscam_ratings",
   parsed_stresscams,
   append = TRUE
 )
 
-pushed_count <- tbl(con_sh_st, "stresscam_data") %>% 
+pushed_count <- tbl(con_sh_st, "stresscam_ratings") %>% 
   filter(rawuid > last_gotten_row) %>% 
   tally() %>% 
   pull(n)
 
 loggit(
   "INFO",
-  "stresscam_data",
+  "stresscam_ratings",
   success = rows_aff,
   rows = pushed_count
 )
