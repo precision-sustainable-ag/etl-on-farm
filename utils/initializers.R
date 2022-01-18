@@ -315,7 +315,7 @@ etl_init_shadow_stresscams <- function(reset = F) {
       timestamp_utc TEXT,
       timestamp_local TEXT,
       timestamp_zone TEXT,
-      ts_up INTEGER,
+      ts_up TEXT,
       cpu_temp REAL,
       sd_free REAL,
       mode TEXT,
@@ -324,12 +324,13 @@ etl_init_shadow_stresscams <- function(reset = F) {
       rep INTEGER,
       trt TEXT,
       file TEXT,
-      P_WS_0 REAL,
-      P_WS_1 REAL,
-      P_WS_2 REAL,
-      P_WS_3 REAL,
-      P_WS_4 REAL,
-      P_WS_5 REAL,
+      -- P_WS_0 REAL,
+      -- P_WS_1 REAL,
+      -- P_WS_2 REAL,
+      -- P_WS_3 REAL,
+      -- P_WS_4 REAL,
+      -- P_WS_5 REAL,
+      probabilities TEXT,
       P_WS REAL
     );"
   )
@@ -753,6 +754,8 @@ etl_create_shadow_forms_decomp_biomass_fresh__biomass_decomp_bag <- function(res
 #  - (don't forget to make log dirs)
 # etl_cron("raw_to_shadow_hologram.R", at = "19:09")
 # etl_cron("shadow_to_prod_hologram.R", at = "19:14")
+# etl_cron("raw_to_shadow_stresscams.R", at = "19:19")
+# etl_cron("shadow_to_prod_stresscams.R", at = "19:24")
 # etl_cron("raw_to_shadow_kobo.R", at = "19:19")
 # etl_cron("shadow_to_prod_kobo.R", at = "19:24")
 # etl_cron("shadow_backup.R", at = "20:29", freq = "daily") 
