@@ -306,7 +306,7 @@ etl_init_shadow_stresscams <- function(reset = F) {
   # Store stresscam info
   dbExecute(
     con_sh,
-    "CREATE TABLE stresscam_data (
+    "CREATE TABLE stresscam_ratings (
       sid INTEGER PRIMARY KEY AUTOINCREMENT,
       rawuid INTEGER,
       device_id INTEGER,
