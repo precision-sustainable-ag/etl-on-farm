@@ -62,7 +62,6 @@ upsert_do_nothing <- function(temptable, targettable, nms_both, unicity_nm) {
     {conflict_clause}
     "
   )
-  
 }
 
 # Pull specified rows, push to temp, perform antijoin and insert
@@ -211,7 +210,7 @@ etl_upsert_stresscams <- function(shadow_tb, prod_tb, rawuids, unicity = NULL) {
   query <- upsert_do_nothing(
     temp_tb, prod_tb, nms_match, unicity
   )
-  
+
   rows_affected <- purrr::safely(dbExecute)(prod_con, query)
   
   dbDisconnect(prod_con)
