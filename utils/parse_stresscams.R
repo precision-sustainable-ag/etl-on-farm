@@ -49,8 +49,8 @@ parse_stresscams <- function(elt) {
     mode = elt$data$MODE,
     crop = elt$data$CROP,
     code = elt$data$FARM,
-    rep = as.numeric(elt$data$REP),
-    trt = elt$data$TRT,
+    subplot = as.numeric(elt$data$REP),
+    treatment = elt$data$TRT,
     file = elt$data$FILE,
     probabilities = probs_string,
     P_WS = as.integer(elt$data$P_WS)
