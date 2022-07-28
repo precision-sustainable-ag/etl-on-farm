@@ -252,6 +252,10 @@ parse_nodes <- function(elt) {
       vars(-starts_with("tdr")),
       as.numeric
     ) %>% 
+    mutate_at(
+      vars(-starts_with("tdr")),
+      ~scales::oob_censor_any(., range = c(-(2^31), 2^31))
+    ) %>% 
     mutate(
       node_serial_no = meta$node_serial_no,
       timestamp = meta$timestamp,
