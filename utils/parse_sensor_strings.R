@@ -202,7 +202,9 @@ parse_nodes <- function(elt) {
   } else if (length(meta) == 7) {
     meta <- purrr::set_names(meta, nm_list$meta[c(1, 3:8)])
   }
-  
+ 
+  orig <- meta["timestamp"]
+
   meta <- dplyr::bind_cols(
     rawuid = elt$uid,
     device_id = elt$deviceId,
@@ -214,13 +216,16 @@ parse_nodes <- function(elt) {
     mutate_at(vars(timestamp, ts_up), lubridate::as_datetime)
   
   # TODO this will break if parsing old data (out of season)
-  # tosses timestamps more than a day in the future or more than 365 days old
+  # tosses timestamps more than a day in the future or more than 2*365 days old
   if (
-    get0("real_time", ifnotfound = Sys.time()) + 3600*24 < meta$timestamp ||
-    get0("real_time", ifnotfound = Sys.time()) - 365*3600*24 > meta$timestamp ||
+    # get0("real_time", ifnotfound = Sys.time()) + 3600*24 < meta$timestamp ||
+    # get0("real_time", ifnotfound = Sys.time()) - 2*365*3600*24 > meta$timestamp ||
+    # is.na(meta$timestamp)
+    Sys.time() + 3600*24 < meta$timestamp ||
+    Sys.time() - 2*365*3600*24 > meta$timestamp ||
     is.na(meta$timestamp)
   ) {
-    stop("Invalid on-device timestamp:", lubridate::as_date(meta$timestamp))
+    stop(paste0("Invalid on-device timestamp: ", orig))
   }
 
   
