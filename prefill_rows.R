@@ -153,6 +153,10 @@ table_row_dictionary <- list(
     gps_locations = 1,
     sensor_data = 1
   ),
+  "texture_from_samples" = list(
+    subplot = 1:2,
+    depth = 1:3
+  ),
   "yield_in_field" = list(
     subplot = 1:2,
     treatment = c("B", "C"),
